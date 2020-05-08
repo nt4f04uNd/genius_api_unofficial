@@ -11,7 +11,26 @@ part 'config.g.dart';
 
 @JsonSerializable()
 
-/// Serializable test config
+/// Serializable test config, allows to easily configure the tests.
+///
+/// Create `config.json` file and just put there the names of the fields of this class.
+/// Then you can import this into any test file and use it. 
+/// 
+/// See [TestConfig.fromJsonConfig()] constructor.
+///
+/// Usage example:
+/// ```dart
+/// final config = TestConfig.fromJsonConfig();
+/// 
+/// final skipGroup = config.skipGroup;
+/// final skipTest = config.skipTest;
+/// final skipExpect = config.skipExpect;
+/// 
+/// final api = GeniusApiRaw(
+///   accessToken: config.accessTokenUserAll,
+/// );
+/// ```
+///
 class TestConfig {
   TestConfig({
     this.accessTokenClient,
@@ -95,14 +114,20 @@ class TestConfig {
       _$TestConfigFromJson(json);
 
   /// Gets object from the JSON file config.
-  /// 
+  ///
   /// The [configUri] is the path to the config file.
-  /// Defaults to `Uri.file('test/config.json', windows: true)`, 
-  /// that means that it is in the same dir as this class.
+  /// Defaults to `Uri.file('test/config.json', windows: true)`,
+  /// that means that it has to be in the same `test` dir as this class.
   factory TestConfig.fromJsonConfig({Uri configUri}) {
     configUri ??= Uri.file('test/config.json', windows: true);
+    final file = File.fromUri(configUri);
+    if(file.existsSync()){
     return TestConfig.fromJson(
       jsonDecode(File.fromUri(configUri).readAsStringSync()),
     );
+    }
+    else {
+      throw Exception("The `config.json` wasn't by path: ${configUri.toFilePath()}. Have you created it?");
+    }
   }
 }

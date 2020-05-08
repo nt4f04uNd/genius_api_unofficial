@@ -15,23 +15,51 @@ void main() {
   final skipTest = config.skipTest;
   final skipExpect = config.skipExpect;
 
-  final auth = GeniusApiAuth(
-    accessToken: config.accessTokenUserAll,
-    clientId: config.clientId,
-    clientSecret: config.clientSecret,
-    redirectUri: Uri.parse(config.redirectUri),
+  GeniusApiAuth auth;
+  group(
+    'Auth constructors | ',
+    () {
+      test(
+        'Default',
+        () {
+          auth = GeniusApiAuth(
+            clientId: config.clientId,
+            clientSecret: config.clientSecret,
+            redirectUri: config.redirectUri,
+          );
+        },
+        // skip: skipTest,
+      );
+
+      test(
+        'Client',
+        () {
+          GeniusApiAuth.client(
+            clientId: config.clientId,
+            redirectUri: config.redirectUri,
+          );
+        },
+        // skip: skipTest,
+      );
+
+      test(
+        'Server',
+        () {
+          GeniusApiAuth.server(
+            clientSecret: config.clientSecret,
+            redirectUri:config.redirectUri,
+          );
+        },
+        // skip: skipTest,
+      );
+    },
+    // skip: skipGroup,
   );
 
-  //****************** Auth group *****************************************************
+  //****************** Methods group *****************************************************
   group(
-    'Auth group',
+    'Auth methods | ',
     () {
-      // setUp(() {});
-
-      // test('General stuff test', () {
-      //   expect(GeniusApiAuthScope.me.stringValue, "me");
-      // });
-
       //******** authorize ********
       test(
         'authorize method test',
@@ -51,7 +79,6 @@ void main() {
         'token method test',
         () async {
           await auth.token(config.exchangeCode);
-          expect(auth.accessToken != null, true, skip: skipExpect);
         },
         skip: skipTest,
       );

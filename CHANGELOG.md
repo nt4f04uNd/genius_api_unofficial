@@ -1,3 +1,5 @@
 ## 1.0.0
 
-- Initial version, created by Stagehand
+- Initial version.
+- All core classes.
+- Raw API implementation.

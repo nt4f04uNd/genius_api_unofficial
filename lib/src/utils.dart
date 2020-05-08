@@ -6,7 +6,7 @@
 import 'dart:io';
 
 /// Opens URl in browser if dart is running in any desktop environment.
-Future<ProcessResult> openUrlDesktop(String url) async {
+Future<ProcessResult> openUrlOnDesktop(String url) async {
   if (Platform.isWindows) {
     // These ' ' needed because arguments parsers won't embed double quotation marks in command line.
     return Process.run('start', [' ', url + ' '], runInShell: true);
@@ -15,6 +15,6 @@ Future<ProcessResult> openUrlDesktop(String url) async {
   } else if (Platform.isMacOS) {
     return Process.run('open', [url]);
   } else {
-    throw Exception("Couldn't open url in browser: not a desktop platform");
+    throw Exception("Couldn't open url in browser: not a desktop platform.");
   }
 }

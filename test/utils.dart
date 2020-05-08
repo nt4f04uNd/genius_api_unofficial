@@ -13,19 +13,11 @@ void prettyPrintJson(Map<String, dynamic> json) {
   prettyString.split('\n').forEach((element) => print(element));
 }
 
-/// Returns [GeniusApiResponse.successful].
-///
-/// This is callback to pass down to then method from API call future.
-///
-/// The [res] is the future result in then method.
-bool testResult(GeniusApiResponse res) => res.successful;
-
 /// Returns [GeniusApiResponse.successful] and pretty logs JSON [GeniusApiResponse.response]
 ///
 /// This is callback to pass down to then method from API call future.
 ///
 /// The [res] is the future result in then method.
-bool testResultWithLog(GeniusApiResponse res) {
-  prettyPrintJson(res.response);
-  return res.successful;
+void testLogData(GeniusApiResponse res) {
+  prettyPrintJson(res.data);
 }

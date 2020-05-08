@@ -26,23 +26,3 @@ TestConfig _$TestConfigFromJson(Map<String, dynamic> json) {
     skipExpect: json['skipExpect'] as bool,
   );
 }
-
-Map<String, dynamic> _$TestConfigToJson(TestConfig instance) =>
-    <String, dynamic>{
-      'accessTokenClient': instance.accessTokenClient,
-      'accessTokenUser': instance.accessTokenUser,
-      'accessTokenUserMe': instance.accessTokenUserMe,
-      'accessTokenUserCreateAnnotation':
-          instance.accessTokenUserCreateAnnotation,
-      'accessTokenUserManageAnnotation':
-          instance.accessTokenUserManageAnnotation,
-      'accessTokenUserVote': instance.accessTokenUserVote,
-      'accessTokenUserAll': instance.accessTokenUserAll,
-      'clientId': instance.clientId,
-      'clientSecret': instance.clientSecret,
-      'redirectUri': instance.redirectUri,
-      'exchangeCode': instance.exchangeCode,
-      'skipGroup': instance.skipGroup,
-      'skipTest': instance.skipTest,
-      'skipExpect': instance.skipExpect,
-    };

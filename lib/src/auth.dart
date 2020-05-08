@@ -11,41 +11,11 @@ import 'utils.dart';
 import 'package:meta/meta.dart';
 import 'package:http/http.dart' as http;
 
-/// Implements Genius API oauth pattern,
+/// Implements Genius API methods for OAuth 2.0 pattern,
 /// both for server and for client.
 ///
 /// See [Genius auth docs](https://docs.genius.com/#/authentication-h1) for more info.
 class GeniusApiAuth {
-  String _accessToken;
-
-  /// A bearer token used to access all other Genius API methods.
-  ///
-  /// All requests to Genius API are authenticated with it.
-  ///
-  /// There are two types of access tokens:
-  /// 1. ***User-specific*** - to get them, you have to use [authorize]
-  /// and also, depending on whether your application client-only, or not, [token].
-  /// 2. ***Client access token*** - see below.
-  ///
-  /// If your application doesn't include user-specific behaviors you can use
-  /// the client access token associated with your API instead of tokens for authenticated users.
-  /// These tokens are only valid for read-only endpoints that are not restricted by a
-  /// [required scope](https://docs.genius.com/#/available-scopes).
-  ///
-  /// You can get a client access token by clicking "Generate Access Token" on the
-  /// [API Client management page](https://genius.com/api-clients).
-
-  String get accessToken {
-    if (_accessToken == null) {
-      // TODO: remove it or make it dev/debug-only
-      print(
-          'WARNING! You are calling accessToken getter when the accessToken is null. Have you set up GeniusApiAuth?');
-    }
-    return _accessToken;
-  }
-
-  set accessToken(value) => _accessToken = value;
-
   /// Your application's Client ID, as listed on the
   /// [API Client management page](https://genius.com/api-clients).
   ///
@@ -53,60 +23,57 @@ class GeniusApiAuth {
   /// into Genius API, see [authorize].
   ///
   /// You can easily omit this if you don't need to call [authorize].
-  String clientId;
+  final String clientId;
 
   /// Your application's Client Secret, as listed on the
   /// [API Client management page](https://genius.com/api-clients).
   ///
-  /// Used to make a post query to Genius API to get the [accessToken]
+  /// Used to make a post query to Genius API to get the [GeniusApi.accessToken]
   /// after user authorizes with [authorize], see [token].
   ///
   /// You can easily omit this if you don't have a server and don't need to call [token].
-  String clientSecret;
+  final String clientSecret;
 
   /// The URI that Genius will redirect the user to after they've authorized in your application.
   /// It must be the same as the one set for the API client on [management page](https://genius.com/api-clients).
   ///
   /// Must be provided if you use will use either [authorize] or [token]
-  Uri redirectUri;
+  final Uri redirectUri;
 
   /// Default constructor.
-  /// Shouldn't ever be used as there's no actual reason to specify together
-  /// all [accessToken], [clientId] and [clientSecret].
   ///
-  /// If you specify [clientId] or [clientSecret], the [redirectUri] also must be provided.
+  /// The `redirectUri` in the constructor can be either a [String] or a [Uri].
+  @Deprecated(
+      "Prefer using named constructors instead of it as there's no actual reason to specify together both [clientId] and [clientSecret]")
   GeniusApiAuth({
-    String accessToken,
     this.clientId,
     this.clientSecret,
-    this.redirectUri,
-  })  : _accessToken = accessToken,
-        assert(accessToken != null ||
-            (clientId != null || clientSecret != null) && redirectUri != null);
-
-  /// Creates an auth object from available [accessToken].
-  ///
-  /// Convenient to use it for client access tokens - when you don't need to auth the user,
-  /// though also can be used if you have somehow already gotten user-specific access token.
-  GeniusApiAuth.fromAccessToken({@required String accessToken})
-      : _accessToken = accessToken,
-        assert(accessToken != null);
+    dynamic redirectUri,
+  }) : redirectUri = checkUri(redirectUri);
 
   /// Creates an auth object for client usage.
   /// See [authorize].
-  GeniusApiAuth.client({@required this.clientId, @required this.redirectUri})
-      : assert(clientId != null && redirectUri != null);
+  ///
+  /// The `redirectUri` in the constructor can be either a [String] or a [Uri].
+  GeniusApiAuth.client({@required this.clientId, @required dynamic redirectUri})
+      : redirectUri = checkUri(redirectUri),
+        clientSecret = null,
+        assert(clientId != null && redirectUri != null);
 
   /// Creates an auth object for the server usage.
   /// See [token].
+  ///
+  /// The `redirectUri` in the constructor can be either a [String] or a [Uri].
   GeniusApiAuth.server(
-      {@required this.clientSecret, @required this.redirectUri})
-      : assert(clientSecret != null && redirectUri != null);
+      {@required this.clientSecret, @required dynamic redirectUri})
+      : redirectUri = checkUri(redirectUri),
+        clientId = null,
+        assert(clientSecret != null && redirectUri != null);
 
   /// Constructs the Uri to redirect the user of your application to Genius's authentication page.
   ///
   /// It allows you to open this Uri by your self, because this part is very platform-dependent.
-  /// Example of usage with [openUrlDesktop] is implemented in [authorize] method.
+  /// Example of usage with [openUrlOnDesktop] is implemented in [authorize] method.
   /// Note that just requesting this method by https GET is pointless, as it returns HTML page.
   ///
   /// On the authentication page the user can choose to allow your application to access Genius on their behalf.
@@ -152,7 +119,7 @@ class GeniusApiAuth {
     assert(clientId != null,
         "You haven't specified [clientId] for using this method");
 
-    return Uri.https(geniusApiBaseUrl, 'oauth/authorize', {
+    return Uri.https(GeniusApi.baseUrl, 'oauth/authorize', {
       'client_id': clientId,
       'redirect_uri': redirectUri.toString(),
       'scope': scope
@@ -171,14 +138,19 @@ class GeniusApiAuth {
     String state,
     GeniusApiAuthResponseType responseType = GeniusApiAuthResponseType.code,
   }) {
-    return openUrlDesktop(constructAuthorize(
-      scope: scope,
-      state: state,
-      responseType: responseType,
-    ).toString());
+    try {
+      return openUrlOnDesktop(constructAuthorize(
+        scope: scope,
+        state: state,
+        responseType: responseType,
+      ).toString());
+    } catch (error) {
+      throw Exception(
+          'You are not on a desktop platform. Consider using `constructAuthorize` method instead to get the redirect Uri and open it manually.');
+    }
   }
 
-  /// Exchanges code query parameter from the redirect after using [authorize] to the actual [accessToken]
+  /// Exchanges code query parameter from the redirect after using [authorize] to the actual [GeniusApi.accessToken]
   /// by making a POST request.
   ///
   /// This method is intended to be used on server side, so internally it requires
@@ -188,13 +160,13 @@ class GeniusApiAuth {
   ///
   /// [code] is code query parameter from the redirect to your [redirectUri] in [authorize].
   ///
-  /// Throws [AuthTokenMethodException] if gets `error` field in the response.
+  /// Throws [GeniusApiException] ([GeniusApiException.apiRequest] will be null).
   Future<void> token(String code) async {
     assert(clientSecret != null,
         "You haven't specified [clientSecret] for using this method");
 
     final res = await http.post(
-      Uri.https(geniusApiBaseUrl, 'oauth/token', {
+      Uri.https(GeniusApi.baseUrl, 'oauth/token', {
         'code': code,
         'client_secret': clientSecret,
         'grant_type': 'authorization_code',
@@ -204,18 +176,26 @@ class GeniusApiAuth {
       }),
     );
     final json = jsonDecode(res.body);
-    if (json['error'] != null) {
-      throw AuthTokenMethodException(
-        type: json['error'],
-        description: json['error_description'],
-      );
+
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      return json['access_token'];
     } else {
-      accessToken = json['access_token'];
+      var message;
+      if (json['meta'] != null) {
+        message = json['meta']['message'];
+      }
+      throw GeniusApiException(
+        statusCode: res.statusCode,
+        httpErrorPhrase: res.reasonPhrase,
+        message: message,
+        detailedType: json['error'],
+        detailedDescription: json['error_description'],
+      );
     }
   }
 }
 
-/// The scopes that restrict what Genius API methods you can access with the [GeniusApiAuth.accessToken].
+/// The scopes that restrict what Genius API methods you can access with the [GeniusApi.accessToken].
 ///
 /// Access tokens can only be used for resources that
 /// are covered by the scopes provided when they created,
@@ -278,17 +258,4 @@ extension GeniusApiAuthResponseTypeStringValue on GeniusApiAuthResponseType {
     if (this == null) return 'null';
     return toString().substring('GeniusApiAuthResponseType.'.length);
   }
-}
-
-/// The exception thrown when the method [GeniusApiAuth.token] gets an error in response.
-/// 
-/// This is the only thrown error, because the the failure of the [GeniusApiAuth.token]
-/// method is totally wrong from the point of view of the implementation.
-class AuthTokenMethodException implements Exception {
-  final String type;
-  final String description;
-  AuthTokenMethodException({this.type, this.description});
-  @override
-  String toString() =>
-      "Auth token method error of type '$type'\ndescription: $description";
 }

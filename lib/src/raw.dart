@@ -3,28 +3,27 @@
 *  Licensed under the BSD-style license. See LICENSE in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import 'dart:convert';
-
 import 'package:genius_api_unofficial/genius_api_unofficial.dart';
 import 'package:meta/meta.dart';
-import 'package:http/http.dart' as http;
 
 import 'auth.dart';
 
-/// TODO: docs
+/// Basic Genius API implementation which contains all the endpoints
+/// listed in official documentation.
+///
+/// Any method call always returns [GeniusApiResponse] with a map response data on success,
+/// or throws [GeniusApiException] if there occurred some error.
 class GeniusApiRaw extends GeniusApi {
-  /// The auth instance to authenticate API calls.
-  @override
-  final GeniusApiAuth auth;
-
-  /// The default format of all Genius API responses is [dom].
-  @override
-  final GeniusApiTextFormat defaultTextFormat;
-
+  /// Creates API object.
+  /// More info about accessToken: [GeniusApi.accessToken].
+  /// More info about defaultOptions: [GeniusApi.defaultOptions].
   GeniusApiRaw({
-    this.auth,
-    this.defaultTextFormat,
-  });
+    String accessToken,
+    GeniusApiOptions defaultOptions,
+  }) : super(
+          accessToken: accessToken,
+          defaultOptions: defaultOptions,
+        );
 
   /// Gets data for a specific annotation.
   ///
@@ -37,25 +36,19 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// The [id] is the ID of the annotation.
   ///
-  /// The [textFormat] is the [GeniusApiTextFormat] for the response.
+  /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> getAnnotation(
     int id, {
-    GeniusApiTextFormat textFormat,
+    GeniusApiOptions options,
   }) async {
     assert(id != null);
-    textFormat ??= defaultTextFormat;
-    return makeRequest(
-      GeniusApiRequest(
-        textFormat: textFormat,
-        call: () => http.get(
-          Uri.https(geniusApiBaseUrl, 'annotations/${id}', {
-            if (textFormat != null) 'text_format': textFormat.stringValue,
-          }),
-          headers: {
-            'Authorization': 'Bearer ${auth.accessToken}',
-          },
-        ),
-      ),
+    options = combineOptions(options);
+    return get(
+      Uri.https(GeniusApi.baseUrl, 'annotations/${id}', {
+        if (options.textFormat != null)
+          'text_format': options.textFormat.stringValue,
+      }),
+      options,
     );
   }
 
@@ -89,8 +82,7 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// The [webPageTitle] is the title of the page.
   ///
-  /// The [textFormat] is the [GeniusApiTextFormat] for the response
-  /// (this is not mentioned for some reason in official docs).
+  /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> postCreateAnnotation({
     @required String annotationMarkdown,
     @required Uri referentRawAnnotatableUrl,
@@ -100,30 +92,22 @@ class GeniusApiRaw extends GeniusApi {
     Uri webPageCanonicalUrl,
     Uri webPageOgUrl,
     String webPageTitle,
-    GeniusApiTextFormat textFormat,
+    GeniusApiOptions options,
   }) async {
-    textFormat ??= defaultTextFormat;
-    return makeRequest(
-      GeniusApiRequest(
-        textFormat: textFormat,
-        call: () => http.post(
-          Uri.https(geniusApiBaseUrl, 'annotations'),
-          headers: {
-            'Authorization': 'Bearer ${auth.accessToken}',
-            'Content-Type': 'application/json',
-          },
-          body: _constructAnnotationRequestBody(
-            annotationMarkdown,
-            referentRawAnnotatableUrl,
-            referentFragment,
-            referentBeforeHtml,
-            referentAfterHtml,
-            webPageCanonicalUrl,
-            webPageOgUrl,
-            webPageTitle,
-            textFormat,
-          ),
-        ),
+    options = combineOptions(options);
+    return post(
+      Uri.https(GeniusApi.baseUrl, 'annotations'),
+      options,
+      json: _constructAnnotationRequestBody(
+        annotationMarkdown,
+        referentRawAnnotatableUrl,
+        referentFragment,
+        referentBeforeHtml,
+        referentAfterHtml,
+        webPageCanonicalUrl,
+        webPageOgUrl,
+        webPageTitle,
+        options.textFormat,
       ),
     );
   }
@@ -161,7 +145,7 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// The [webPageTitle] is the title of the page.
   ///
-  /// The [textFormat] is the [GeniusApiTextFormat] for the response
+  /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> putUpdateAnnotation(
     int id, {
     @required String annotationMarkdown,
@@ -172,31 +156,23 @@ class GeniusApiRaw extends GeniusApi {
     Uri webPageCanonicalUrl,
     Uri webPageOgUrl,
     String webPageTitle,
-    GeniusApiTextFormat textFormat,
+    GeniusApiOptions options,
   }) async {
     assert(id != null);
-    textFormat ??= defaultTextFormat;
-    return makeRequest(
-      GeniusApiRequest(
-        textFormat: textFormat,
-        call: () => http.put(
-          Uri.https(geniusApiBaseUrl, 'annotations/${id}'),
-          headers: {
-            'Authorization': 'Bearer ${auth.accessToken}',
-            'Content-Type': 'application/json',
-          },
-          body: _constructAnnotationRequestBody(
-            annotationMarkdown,
-            referentRawAnnotatableUrl,
-            referentFragment,
-            referentBeforeHtml,
-            referentAfterHtml,
-            webPageCanonicalUrl,
-            webPageOgUrl,
-            webPageTitle,
-            textFormat,
-          ),
-        ),
+    options = combineOptions(options);
+    return put(
+      Uri.https(GeniusApi.baseUrl, 'annotations/${id}'),
+      options,
+      json: _constructAnnotationRequestBody(
+        annotationMarkdown,
+        referentRawAnnotatableUrl,
+        referentFragment,
+        referentBeforeHtml,
+        referentAfterHtml,
+        webPageCanonicalUrl,
+        webPageOgUrl,
+        webPageTitle,
+        options.textFormat,
       ),
     );
   }
@@ -209,19 +185,18 @@ class GeniusApiRaw extends GeniusApi {
   /// That's why it doesn't have textFormat parameter.
   ///
   /// The [id] is the ID of the annotation.
-  Future<GeniusApiResponse> deleteAnnotation(int id) async {
+  ///
+  /// [options] are the new call options to override [defaultOptions] for this request.
+  Future<GeniusApiResponse> deleteAnnotation(
+    int id, {
+    GeniusApiOptions options,
+  }) async {
     assert(id != null);
-    return makeRequest(
-      GeniusApiRequest(
-        textFormat: null,
-        textFormatApplicable: false,
-        call: () => http.delete(
-          Uri.https(geniusApiBaseUrl, 'annotations/${id}'),
-          headers: {
-            'Authorization': 'Bearer ${auth.accessToken}',
-          },
-        ),
-      ),
+    options = combineOptions(options);
+    return delete(
+      Uri.https(GeniusApi.baseUrl, 'annotations/${id}'),
+      options,
+      textFormatApplicable: false,
     );
   }
 
@@ -231,25 +206,19 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// The [id] is the ID of the annotation.
   ///
-  /// The [textFormat] is the [GeniusApiTextFormat] for the response.
+  /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> putUpvoteAnnotation(
     int id, {
-    GeniusApiTextFormat textFormat,
+    GeniusApiOptions options,
   }) async {
     assert(id != null);
-    textFormat ??= defaultTextFormat;
-    return makeRequest(
-      GeniusApiRequest(
-        textFormat: textFormat,
-        call: () => http.put(
-          Uri.https(geniusApiBaseUrl, 'annotations/${id}/upvote', {
-            if (textFormat != null) 'text_format': textFormat.stringValue,
-          }),
-          headers: {
-            'Authorization': 'Bearer ${auth.accessToken}',
-          },
-        ),
-      ),
+    options = combineOptions(options);
+    return put(
+      Uri.https(GeniusApi.baseUrl, 'annotations/${id}/upvote', {
+        if (options.textFormat != null)
+          'text_format': options.textFormat.stringValue,
+      }),
+      options,
     );
   }
 
@@ -259,25 +228,19 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// The [id] is the ID of the annotation.
   ///
-  /// The [textFormat] is the [GeniusApiTextFormat] for the response.
+  /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> putDownvoteAnnotation(
     int id, {
-    GeniusApiTextFormat textFormat,
+    GeniusApiOptions options,
   }) async {
     assert(id != null);
-    textFormat ??= defaultTextFormat;
-    return makeRequest(
-      GeniusApiRequest(
-        textFormat: textFormat,
-        call: () => http.put(
-          Uri.https(geniusApiBaseUrl, 'annotations/${id}/downvote', {
-            if (textFormat != null) 'text_format': textFormat.stringValue,
-          }),
-          headers: {
-            'Authorization': 'Bearer ${auth.accessToken}',
-          },
-        ),
-      ),
+    options = combineOptions(options);
+    return put(
+      Uri.https(GeniusApi.baseUrl, 'annotations/${id}/downvote', {
+        if (options.textFormat != null)
+          'text_format': options.textFormat.stringValue,
+      }),
+      options,
     );
   }
 
@@ -287,32 +250,24 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// The [id] is the ID of the annotation.
   ///
-  /// The [textFormat] is the [GeniusApiTextFormat] for the response.
+  /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> putUnvoteAnnotation(
     int id, {
-    GeniusApiTextFormat textFormat,
+    GeniusApiOptions options,
   }) async {
     assert(id != null);
-    textFormat ??= defaultTextFormat;
-    return makeRequest(
-      GeniusApiRequest(
-        textFormat: textFormat,
-        call: () => http.put(
-          Uri.https(geniusApiBaseUrl, 'annotations/${id}/unvote', {
-            if (textFormat != null) 'text_format': textFormat.stringValue,
-          }),
-          headers: {
-            'Authorization': 'Bearer ${auth.accessToken}',
-          },
-        ),
-      ),
+    options = combineOptions(options);
+    return put(
+      Uri.https(GeniusApi.baseUrl, 'annotations/${id}/unvote', {
+        if (options.textFormat != null)
+          'text_format': options.textFormat.stringValue,
+      }),
+      options,
     );
   }
 
   /// Creates http request body for [postCreateAnnotation] and [putUpdateAnnotation] methods.
-  ///
-  /// Returns JSON string, so header `Content-Type` has to be set to `application/json`
-  String _constructAnnotationRequestBody(
+  Map<String, dynamic> _constructAnnotationRequestBody(
     String annotationMarkdown,
     Uri referentRawAnnotatableUrl,
     String referentFragment,
@@ -335,7 +290,7 @@ class GeniusApiRaw extends GeniusApi {
           webPageTitle != null,
       'At least one required: webPageCanonicalUrl, webPageOgUrl or webPageTitle',
     );
-    return jsonEncode({
+    return {
       if (textFormat != null) 'text_format': textFormat.stringValue,
       'annotation': {
         'body': {
@@ -357,7 +312,7 @@ class GeniusApiRaw extends GeniusApi {
         if (webPageOgUrl != null) 'og_url': webPageOgUrl.toString(),
         if (webPageTitle != null) 'title': webPageTitle,
       },
-    });
+    };
   }
 
   /// Gets referents by content item or user responsible for an included annotation.
@@ -383,14 +338,14 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// The [page] is a paginated offset (for example, `perPage=5` and `page=3` returns songs 11–15).
   ///
-  /// The [textFormat] is the [GeniusApiTextFormat] for the response.
+  /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> getReferents({
     int createdById,
     int songId,
     int webPageId,
     int perPage,
     int page,
-    GeniusApiTextFormat textFormat,
+    GeniusApiOptions options,
   }) async {
     assert(
       createdById != null || songId != null || webPageId != null,
@@ -400,24 +355,18 @@ class GeniusApiRaw extends GeniusApi {
       songId == null || webPageId == null,
       'Cannot search for both a web page and song',
     );
-    textFormat ??= defaultTextFormat;
-    return makeRequest(
-      GeniusApiRequest(
-        textFormat: textFormat,
-        call: () => http.get(
-          Uri.https(geniusApiBaseUrl, 'referents', {
-            if (createdById != null) 'created_by_id': createdById.toString(),
-            if (songId != null) 'song_id': songId.toString(),
-            if (webPageId != null) 'web_page_id': webPageId.toString(),
-            if (perPage != null) 'per_page': perPage.toString(),
-            if (page != null) 'page': page.toString(),
-            if (textFormat != null) 'text_format': textFormat.stringValue,
-          }),
-          headers: {
-            'Authorization': 'Bearer ${auth.accessToken}',
-          },
-        ),
-      ),
+    options = combineOptions(options);
+    return get(
+      Uri.https(GeniusApi.baseUrl, 'referents', {
+        if (createdById != null) 'created_by_id': createdById.toString(),
+        if (songId != null) 'song_id': songId.toString(),
+        if (webPageId != null) 'web_page_id': webPageId.toString(),
+        if (perPage != null) 'per_page': perPage.toString(),
+        if (page != null) 'page': page.toString(),
+        if (options.textFormat != null)
+          'text_format': options.textFormat.stringValue,
+      }),
+      options,
     );
   }
 
@@ -430,25 +379,19 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// The [id] is the ID of a song.
   ///
-  /// The [textFormat] is the [GeniusApiTextFormat] for the response.
+  /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> getSong(
     int id, {
-    GeniusApiTextFormat textFormat,
+    GeniusApiOptions options,
   }) async {
     assert(id != null);
-    textFormat ??= defaultTextFormat;
-    return makeRequest(
-      GeniusApiRequest(
-        textFormat: textFormat,
-        call: () => http.get(
-          Uri.https(geniusApiBaseUrl, 'songs/${id}', {
-            if (textFormat != null) 'text_format': textFormat.stringValue,
-          }),
-          headers: {
-            'Authorization': 'Bearer ${auth.accessToken}',
-          },
-        ),
-      ),
+    options = combineOptions(options);
+    return get(
+      Uri.https(GeniusApi.baseUrl, 'songs/${id}', {
+        if (options.textFormat != null)
+          'text_format': options.textFormat.stringValue,
+      }),
+      options,
     );
   }
 
@@ -459,25 +402,19 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// The [id] is the ID of the artist.
   ///
-  /// The [textFormat] is the [GeniusApiTextFormat] for the response.
+  /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> getArtist(
     int id, {
-    GeniusApiTextFormat textFormat,
+    GeniusApiOptions options,
   }) async {
     assert(id != null);
-    textFormat ??= defaultTextFormat;
-    return makeRequest(
-      GeniusApiRequest(
-        textFormat: textFormat,
-        call: () => http.get(
-          Uri.https(geniusApiBaseUrl, 'artists/${id}', {
-            if (textFormat != null) 'text_format': textFormat.stringValue,
-          }),
-          headers: {
-            'Authorization': 'Bearer ${auth.accessToken}',
-          },
-        ),
-      ),
+    options = combineOptions(options);
+    return get(
+      Uri.https(GeniusApi.baseUrl, 'artists/${id}', {
+        if (options.textFormat != null)
+          'text_format': options.textFormat.stringValue,
+      }),
+      options,
     );
   }
 
@@ -492,31 +429,25 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// The [page] is a paginated offset (for example, `perPage=5` and `page=3` returns songs 11–15).
   ///
-  /// The [textFormat] is the [GeniusApiTextFormat] for the response.
+  /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> getArtistSongs(
     int id, {
     GeniusApiSort sort,
     int perPage,
     int page,
-    GeniusApiTextFormat textFormat,
+    GeniusApiOptions options,
   }) async {
     assert(id != null);
-    textFormat ??= defaultTextFormat;
-    return makeRequest(
-      GeniusApiRequest(
-        textFormat: textFormat,
-        call: () => http.get(
-          Uri.https(geniusApiBaseUrl, 'artists/${id}/songs', {
-            if (sort != null) 'sort': sort.stringValue,
-            if (perPage != null) 'per_page': perPage.toString(),
-            if (page != null) 'page': page.toString(),
-            if (textFormat != null) 'text_format': textFormat.stringValue,
-          }),
-          headers: {
-            'Authorization': 'Bearer ${auth.accessToken}',
-          },
-        ),
-      ),
+    options = combineOptions(options);
+    return get(
+      Uri.https(GeniusApi.baseUrl, 'artists/${id}/songs', {
+        if (sort != null) 'sort': sort.stringValue,
+        if (perPage != null) 'per_page': perPage.toString(),
+        if (page != null) 'page': page.toString(),
+        if (options.textFormat != null)
+          'text_format': options.textFormat.stringValue,
+      }),
+      options,
     );
   }
 
@@ -538,54 +469,47 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// The [ogUrl] is the URL as specified by an `og:url <meta>` tag in a page's `<head>`.
   ///
-  /// The [textFormat] is the [GeniusApiTextFormat] for the response.
+  /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> getLookupWebpages({
     Uri rawAnnotatableUrl,
     Uri canonicalUrl,
     Uri ogUrl,
-    GeniusApiTextFormat textFormat,
+    GeniusApiOptions options,
   }) async {
     assert(
       rawAnnotatableUrl != null || canonicalUrl != null || ogUrl != null,
       'Specify at least one url to lookup a webpage',
     );
-    textFormat ??= defaultTextFormat;
-    return makeRequest(
-      GeniusApiRequest(
-        textFormat: textFormat,
-        call: () => http.get(
-          Uri.https(geniusApiBaseUrl, '/web_pages/lookup', {
-            if (rawAnnotatableUrl != null)
-              'raw_annotatable_url': rawAnnotatableUrl.toString(),
-            if (canonicalUrl != null) 'canonical_url': canonicalUrl.toString(),
-            if (ogUrl != null) 'og_url': ogUrl.toString(),
-            if (textFormat != null) 'text_format': textFormat.stringValue,
-          }),
-          headers: {
-            'Authorization': 'Bearer ${auth.accessToken}',
-          },
-        ),
-      ),
+    options = combineOptions(options);
+    return get(
+      Uri.https(GeniusApi.baseUrl, '/web_pages/lookup', {
+        if (rawAnnotatableUrl != null)
+          'raw_annotatable_url': rawAnnotatableUrl.toString(),
+        if (canonicalUrl != null) 'canonical_url': canonicalUrl.toString(),
+        if (ogUrl != null) 'og_url': ogUrl.toString(),
+        if (options.textFormat != null)
+          'text_format': options.textFormat.stringValue,
+      }),
+      options,
     );
   }
 
   /// Searches for songs. The search capability covers all content hosted on Genius (all songs).
   ///
   /// The [query] is the term to search for.
-  Future<GeniusApiResponse> getSearch(String query) async {
-    return makeRequest(
-      GeniusApiRequest(
-        textFormat: null,
-        textFormatApplicable: false,
-        call: () => http.get(
-          Uri.https(geniusApiBaseUrl, '/search', {
-            if (query != null) 'q': query,
-          }),
-          headers: {
-            'Authorization': 'Bearer ${auth.accessToken}',
-          },
-        ),
-      ),
+  ///
+  /// [options] are the new call options to override [defaultOptions] for this request.
+  Future<GeniusApiResponse> getSearch(
+    String query, {
+    GeniusApiOptions options,
+  }) async {
+    options = combineOptions(options);
+    return get(
+      Uri.https(GeniusApi.baseUrl, '/search', {
+        if (query != null) 'q': query,
+      }),
+      options,
+      textFormatApplicable: false,
     );
   }
 
@@ -593,23 +517,17 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// Account information includes general contact information and Genius-specific details about a user.
   ///
-  /// The [textFormat] is the [GeniusApiTextFormat] for the response.
+  /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> getAccount({
-    GeniusApiTextFormat textFormat,
+    GeniusApiOptions options,
   }) async {
-    textFormat ??= defaultTextFormat;
-    return makeRequest(
-      GeniusApiRequest(
-        textFormat: textFormat,
-        call: () => http.get(
-          Uri.https(geniusApiBaseUrl, '/account', {
-            if (textFormat != null) 'text_format': textFormat.stringValue,
-          }),
-          headers: {
-            'Authorization': 'Bearer ${auth.accessToken}',
-          },
-        ),
-      ),
+    options = combineOptions(options);
+    return get(
+      Uri.https(GeniusApi.baseUrl, '/account', {
+        if (options.textFormat != null)
+          'text_format': options.textFormat.stringValue,
+      }),
+      options,
     );
   }
 }
