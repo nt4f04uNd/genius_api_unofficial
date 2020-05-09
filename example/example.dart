@@ -20,7 +20,7 @@ Future<void> main() async {
   // or you can use the client access token without authenticating users http://genius.com/api-clients
   final api = GeniusApiRaw(
     accessToken: 'token here',
-    // And also set all methods to return plain text instead of the default dom format.
+    // Set all methods to return plain text instead of the default dom format.
     defaultOptions: GeniusApiOptions(textFormat: GeniusApiTextFormat.plain),
   );
 

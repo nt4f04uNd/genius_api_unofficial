@@ -7,15 +7,15 @@ import 'tests.dart';
 
 const JsonEncoder _encoderWithSpace = JsonEncoder.withIndent('  ');
 
-/// Pretty prints json to the console.
+/// Pretty prints JSON to the console.
 void prettyPrintJson(Map<String, dynamic> json) {
   final prettyString = _encoderWithSpace.convert(json);
   prettyString.split('\n').forEach((element) => print(element));
 }
 
-/// Returns [GeniusApiResponse.successful] and pretty logs JSON [GeniusApiResponse.response]
+/// Logs JSON data from [GeniusApiResponse.data].
 ///
-/// This is callback to pass down to then method from API call future.
+/// This is callback to pass down to then method from an API call future.
 ///
 /// The [res] is the future result in then method.
 void testLogData(GeniusApiResponse res) {

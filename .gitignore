@@ -10,5 +10,5 @@ build/
 # Directory created by dartdoc
 doc/api/
 
-# Ignore user test config as it is considered private
+# Ignore test config as it is considered private
 test/config.json

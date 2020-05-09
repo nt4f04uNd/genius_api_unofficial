@@ -5,7 +5,8 @@
 
 import 'dart:io';
 
-/// Opens URl in browser if dart is running in any desktop environment.
+/// Opens a [url] in browser if dart is running in any desktop environment.
+/// Else throws an exception.
 Future<ProcessResult> openUrlOnDesktop(String url) async {
   if (Platform.isWindows) {
     // These ' ' needed because arguments parsers won't embed double quotation marks in command line.

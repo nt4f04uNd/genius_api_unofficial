@@ -1,5 +1,3 @@
-## 1.0.0
+## [1.0.0] - May 09, 2020
 
-- Initial version.
-- All core classes.
-- Raw API implementation.
+- Initial release.

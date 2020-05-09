@@ -13,7 +13,6 @@ void main() {
 
   final skipGroup = config.skipGroup;
   final skipTest = config.skipTest;
-  final skipExpect = config.skipExpect;
 
   GeniusApiAuth auth;
   group(
@@ -67,8 +66,9 @@ void main() {
           await auth.authorize(
             // scope: GeniusApiAuthScope.values.toList(),
             scope: [],
-            responseType: GeniusApiAuthResponseType.token,
-            // responseType: GeniusApiAuthResponseType.code,
+            // responseType: GeniusApiAuthResponseType.token,
+            responseType: GeniusApiAuthResponseType.code,
+            state: 'TEST_STATE'
           );
         },
         skip: skipTest,

@@ -113,7 +113,7 @@ class TestConfig {
   factory TestConfig.fromJson(Map<String, dynamic> json) =>
       _$TestConfigFromJson(json);
 
-  /// Gets object from the JSON file config.
+  /// Creates an object from the JSON file config.
   ///
   /// The [configUri] is the path to the config file.
   /// Defaults to `Uri.file('test/config.json', windows: true)`,

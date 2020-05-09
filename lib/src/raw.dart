@@ -9,14 +9,15 @@ import 'package:meta/meta.dart';
 import 'auth.dart';
 
 /// Basic Genius API implementation which contains all the endpoints
-/// listed in official documentation.
+/// listed in the official documentation.
 ///
 /// Any method call always returns [GeniusApiResponse] with a map response data on success,
-/// or throws [GeniusApiException] if there occurred some error.
+/// or throws [GeniusApiException] if some error occured.
 class GeniusApiRaw extends GeniusApi {
-  /// Creates API object.
-  /// More info about accessToken: [GeniusApi.accessToken].
-  /// More info about defaultOptions: [GeniusApi.defaultOptions].
+  /// Creates an API object.
+  ///
+  /// * More info about accessToken: [GeniusApi.accessToken].
+  /// * More info about defaultOptions: [GeniusApi.defaultOptions].
   GeniusApiRaw({
     String accessToken,
     GeniusApiOptions defaultOptions,
@@ -113,7 +114,7 @@ class GeniusApiRaw extends GeniusApi {
   }
 
   /// Updates an annotation created by the authenticated user.
-  /// Accepts the same parameters as [postCreateAnnotation], except [id].
+  /// Accepts the same parameters as [postCreateAnnotation], except the [id].
   ///
   /// Requires scope: [GeniusApiAuthScope.manage_annotation].
   ///
@@ -181,8 +182,8 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// Requires scope: [GeniusApiAuthScope.manage_annotation].
   ///
-  /// This method returns empty body on success, unlike other annotation methods.
-  /// That's why it doesn't have textFormat parameter.
+  /// This method returns empty body on success, unlike other annotation methods,
+  /// that's why it doesn't have textFormat parameter.
   ///
   /// The [id] is the ID of the annotation.
   ///
@@ -266,7 +267,7 @@ class GeniusApiRaw extends GeniusApi {
     );
   }
 
-  /// Creates http request body for [postCreateAnnotation] and [putUpdateAnnotation] methods.
+  /// Creates http request body for the [postCreateAnnotation] and [putUpdateAnnotation] methods.
   Map<String, dynamic> _constructAnnotationRequestBody(
     String annotationMarkdown,
     Uri referentRawAnnotatableUrl,
@@ -319,7 +320,7 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// Must supply at least one: [songId], [webPageId], or [createdById].
   ///
-  /// Also, you may pass only one of [songId] and [webPageId], not both.
+  /// Also, you may pass only one of the [songId] and [webPageId], not both.
   ///
   /// Referents are the sections of a piece of content to which annotations are attached.
   /// Each referent is associated with a web page or a song and may have one or more annotations.

@@ -11,9 +11,9 @@ import 'package:http/http.dart' as http;
 import 'auth.dart';
 import 'raw.dart';
 
-/// Uri creation helper.
-/// 
-/// Will parse uri string or return the uri as it is.
+/// [Uri] creation helper.
+///
+/// Will parse the URI string or return the [Uri] as it is.
 Uri checkUri(dynamic uri) => uri is String ? Uri.parse(uri) : uri;
 
 /// All http methods.
@@ -31,7 +31,7 @@ enum HttpMethod {
 
 /// Extension to serialize the value of [HttpMethod].
 extension HttpMethodStringValue on HttpMethod {
-  /// Returns a string with the value of enum (uppercased).
+  /// Returns a string with the value of enum (in upper-case).
   String get stringValue {
     if (this == null) return 'null';
     return toString().substring('HttpMethod.'.length).toUpperCase();
@@ -57,31 +57,31 @@ class GeniusApiRequest {
     }
   }
 
-  /// Is the http method.
+  /// The http method.
   final HttpMethod method;
 
-  /// Can be [Uri] or a [String].
+  /// Source URI, can be either a [Uri] or a [String].
   dynamic uri;
 
   /// The body data of the request.
   ///
-  /// This contains value before encoding it to JSON for [http.Request].
+  /// This contains data before encoding it to JSON for [http.Request].
   final dynamic json;
 
-  /// Whether the method call is authorized.
+  /// Whether the method call is authorized with [GeniusApi.accessToken].
   final bool authorized;
 
   /// Whether the [GeniusApiTextFormat] is applicable for this method call.
   /// Defaults to `true`.
   ///
-  /// It makes options [GeniusApiOptions.textFormat] null if true.
+  /// It makes option [GeniusApiOptions.textFormat] null if true.
   final bool textFormatApplicable;
 
-  /// API call options.
+  /// Call options for this request, will override [GeniusApi.defaultOptions].
   GeniusApiOptions options;
 }
 
-/// Options that will be applied for API calls.
+/// Options that will be applied for the API calls.
 class GeniusApiOptions {
   GeniusApiOptions({
     this.timeout,
@@ -93,20 +93,22 @@ class GeniusApiOptions {
       : timeout = Duration(minutes: 2),
         textFormat = null;
 
-  /// The maximum duration that request can be performed.
+  /// The maximum duration that a single request can be performed.
   Duration timeout;
 
-  /// The text format that was requested from the server.
+  /// The text format requested from the server.
   ///
   /// Can be `null` in the following cases:
-  /// 1. textFormat was not configured, and method that can accept this parameter should be called without it.
+  ///
+  /// 1. It is not configured, and method that can accept this parameter is called without it.
   ///  In this case returned from the Genius API server text format will be default,
-  ///  that is for now [GeniusApiTextFormat.dom].
-  /// 2. textFormat is not applicable for this method call and [GeniusApiRequest.textFormatApplicable] is `true`.
+  ///  that is currently [GeniusApiTextFormat.dom].
+  /// 2. It is not applicable for the method call, because [GeniusApiRequest.textFormatApplicable] is `true`.
+  ///
   GeniusApiTextFormat textFormat;
 
-  /// Creates a copy of this API options but with the given fields replaced with
-  /// the new values.
+  /// Creates a copy of these API options but with the given fields replaced with
+  /// the new values from other instance.
   GeniusApiOptions copyWith(GeniusApiOptions other) {
     assert(other != null);
     return GeniusApiOptions(
@@ -116,20 +118,20 @@ class GeniusApiOptions {
   }
 }
 
-// TODO: update docs when new API implementations will be written
+// TODO: add new implementations here when they will be written
 /// The base for any Genius API implementation.
 ///
-/// See the implementations (only one for now):
-/// * [GeniusApiRaw] - Basic Genius API implementation which contains all the endpoints
-///  listed in official documentation.
+/// The implementations (only one for now):
+/// * [GeniusApiRaw] - Basic Genius API implementation which contains all the endpoints listed in the official documentation.
 abstract class GeniusApi {
-  /// Creates API object.
-  /// More info about accessToken: [GeniusApi.accessToken].
-  /// More info about defaultOptions: [GeniusApi.defaultOptions].
+  /// Creates an API object.
+  ///
+  /// * More info about accessToken: [GeniusApi.accessToken].
+  /// * More info about defaultOptions: [GeniusApi.defaultOptions].
   GeniusApi({
-    String accessToken,
+    this.accessToken,
     GeniusApiOptions defaultOptions,
-  }) : _accessToken = accessToken {
+  }) {
     final defOptions = GeniusApiOptions.def();
     if (defaultOptions == null) {
       this.defaultOptions = defOptions;
@@ -138,16 +140,17 @@ abstract class GeniusApi {
     }
   }
 
-  String _accessToken;
+  /// The official base url of Genius API.
+  static String baseUrl = 'api.genius.com';
 
-  set accessToken(value) => _accessToken = value;
+  /// The http client.
+  final http.Client _client = http.Client();
 
   /// A bearer token used to access all other Genius API methods.
   ///
   /// Most of the Genius API methods are authenticated with it.
   ///
-  /// Can be omitted, though you won't be able to call methods
-  /// that require [accessToken].
+  /// It can be omitted, though you won't be able to call methods that require it.
   ///
   /// There are two types of access tokens:
   /// 1. ***User-specific*** - to get them, you have to use [GeniusApiAuth.authorize]
@@ -161,26 +164,15 @@ abstract class GeniusApi {
   ///
   /// You can get a client access token by clicking "Generate Access Token" on the
   /// [API Client management page](https://genius.com/api-clients).
-  String get accessToken {
-    if (_accessToken == null) {
-      print(
-        '\nWARNING! You are calling accessToken getter when the accessToken is null. Have you set up GeniusApiAuth?\n',
-      );
-    }
-    return _accessToken;
-  }
+  final String accessToken;
 
-  /// Default API options that will be used on every API call (unless you override them in this API call).
+  /// Default API options that will be used on every API call (unless you override them for a single API call).
   ///
-  /// If omitted will be initialized with [GeniusApiOptions.def()].
+  /// If omitted, will be initialized with [GeniusApiOptions.def()].
   GeniusApiOptions defaultOptions;
 
-  final http.Client _client = http.Client();
-
-  /// The official base url of Genius API.
-  static String baseUrl = 'api.genius.com';
-
-  /// Returns [defaultOptions] if [options] is null, or overrides [defaultOptions] with new values from [options].
+  /// Returns [defaultOptions] if [options] is null,
+  /// or overrides [defaultOptions] with the new values from [options] argument and returns them.
   GeniusApiOptions combineOptions(GeniusApiOptions options) =>
       options == null ? defaultOptions : defaultOptions.copyWith(options);
 
@@ -252,12 +244,12 @@ abstract class GeniusApi {
         textFormatApplicable: textFormatApplicable,
       ));
 
-  /// Makes a call to API, gets the response JSON and wraps it with [GeniusApiResponse] on success
+  /// Makes a call to the API, gets the response JSON and wraps it with [GeniusApiResponse] on success
   /// or else throws [GeniusApiException].
   ///
-  /// Generally not for public usage, as this is very basic method.
+  /// Generally, not for public usage, as this is very basic method.
   ///
-  /// The [apiRequest] is the description of API request.
+  /// The [apiRequest] is the description of the API request.
   ///
   /// This method doesn't takes care about matching [GeniusApiRequest.options] to the [defaultOptions],
   /// this must be a work of a caller.
@@ -310,20 +302,20 @@ abstract class GeniusApi {
   }
 }
 
-/// Represents result of a method call.
+/// Represents a result of a method call.
 abstract class GeniusApiResult {
   GeniusApiResult(this.apiRequest);
 
-  /// API call object.
+  /// An API call object.
   ///
-  /// Its [GeniusApiRequest.uri] will be always [Uri]
+  /// Its [GeniusApiRequest.uri] will be always [Uri].
   final GeniusApiRequest apiRequest;
 }
 
-/// Represents the base of resulting response for any successful call to Genius API
+/// Represents the base of a resulting response for any successful call to Genius API
 /// (except [GeniusApiAuth] methods).
 ///
-/// See also [GeniusApiException] that is throw for unsuccessful calls to API.
+/// See also [GeniusApiException] that will be thrown for unsuccessful calls to the API.
 class GeniusApiResponse implements GeniusApiResult {
   GeniusApiResponse({
     @required this.statusCode,
@@ -335,22 +327,21 @@ class GeniusApiResponse implements GeniusApiResult {
   /// Cannot be `null`.
   final int statusCode;
 
-  /// The actual data returned by API.
-  /// (Equals to `null` for if [statusCode] is `204` - "No content".)
+  /// The actual data returned by the API.
+  /// Equals to `null` if [statusCode] is `204` - "No content".
   final Map<String, dynamic> data;
 
-  /// API call object.
-  ///
+  /// An API call object.
   /// Its [GeniusApiRequest.uri] will be always [Uri].
   @override
   final apiRequest;
 
   @override
   String toString() =>
-      'GeniusApiResponse: {status: $statusCode, data: ${data == null ? null : "jsonData..."}}, apiRequest: apiRequest...';
+      'GeniusApiResponse: [status] $statusCode | [data] ${data == null ? null : "data..."} | [apiRequest] apiRequest...';
 }
 
-/// Error thrown when Genius API responses with codes not from range 2xx.
+/// Exception being thrown when Genius API responses with codes not in range of 2xx.
 class GeniusApiException implements Exception, GeniusApiResult {
   GeniusApiException({
     @required this.statusCode,
@@ -363,8 +354,7 @@ class GeniusApiException implements Exception, GeniusApiResult {
 
   final int statusCode;
 
-  /// API call object.
-  ///
+  /// An API call object.
   /// Its [GeniusApiRequest.uri] will be always [Uri].
   ///
   /// Equals to `null` when thrown out of [GeniusApiAuth.token].
@@ -373,26 +363,26 @@ class GeniusApiException implements Exception, GeniusApiResult {
 
   final String httpErrorPhrase;
 
-  /// Message contained in "meta" "message" field of Genius API response (if present).
+  /// Message contained in the "meta" "message" field of a Genius API response (if present).
   final String message;
 
-  /// Message contained in "error" field of Genius API response (if present).
+  /// Message contained in the "error" field of a Genius API response (if present).
   final String detailedType;
 
-  /// Message contained in "error_description" field of Genius API response (if present).
+  /// Message contained in the "error_description" field of a Genius API response (if present).
   final String detailedDescription;
 
   @override
   String toString() =>
-      '($statusCode) [message] $message | [httpErrorPhrase] $httpErrorPhrase | [detailedType] $detailedType | [detailedDescription] $detailedDescription | [apiRequest] apiRequest...';
+      'GeniusApiException: ($statusCode) [message] $message | [httpErrorPhrase] $httpErrorPhrase | [detailedType] $detailedType | [detailedDescription] $detailedDescription | [apiRequest] apiRequest...';
 }
 
 /// The format of returned Genius API data.
 ///
 /// The default format of all Genius API responses is [dom].
 ///
-/// Many API requests accept a text_format query parameter
-/// that can be used to specify how text content is formatted.
+/// Many API methods accept a textFormat query parameter
+/// that can be used to specify how response text content is formatted.
 /// The value for the parameter must be one or more of [plain], [html], and [dom].
 enum GeniusApiTextFormat {
   /// Just plain text, no markup.
@@ -401,7 +391,8 @@ enum GeniusApiTextFormat {
   /// String of unescaped HTML suitable for rendering by a browser.
   html,
 
-  /// Nested object representing and HTML DOM hierarchy that can be used to programmatically.
+  /// Nested object representing and HTML DOM hierarchy that
+  /// can be used to programmatically present structured content.
   dom
 }
 
@@ -414,8 +405,9 @@ extension GeniusApiTextFormatStringValue on GeniusApiTextFormat {
   }
 }
 
-/// A sort feature. Used in [GeniusApiRaw.getArtistSongs] method.
-/// Default for the API is [title].
+/// A sort feature.
+/// Used in [GeniusApiRaw.getArtistSongs] method.
+/// The default for the API is [title].
 enum GeniusApiSort { title, popularity }
 
 /// Extension to serialize the value of [GeniusApiSort].

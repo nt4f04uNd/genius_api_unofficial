@@ -33,7 +33,7 @@ void main() {
           expect(
             await api
                 .postCreateAnnotation(
-              annotationMarkdown: 'wowowow',
+              annotationMarkdown: 'TEST ANNOTATION',
               referentRawAnnotatableUrl: Uri.parse(
                 'https://seejohncode.com/2014/01/27/vim-commands-piping/',
               ),
@@ -68,7 +68,7 @@ void main() {
           expect(
             await api.putUpdateAnnotation(
               annotationId,
-              annotationMarkdown: 'wowowow_changed',
+              annotationMarkdown: 'TEST ANNOTATION CHANGED',
               referentRawAnnotatableUrl: Uri.parse(
                 'https://seejohncode.com/2014/01/27/vim-commands-piping/',
               ),

@@ -11,7 +11,7 @@ import 'utils.dart';
 import 'package:meta/meta.dart';
 import 'package:http/http.dart' as http;
 
-/// Implements Genius API methods for OAuth 2.0 pattern,
+/// Implements the Genius API methods for OAuth 2.0 pattern,
 /// both for server and for client.
 ///
 /// See [Genius auth docs](https://docs.genius.com/#/authentication-h1) for more info.
@@ -22,22 +22,22 @@ class GeniusApiAuth {
   /// Used in cases when you need to authenticate the users of you application
   /// into Genius API, see [authorize].
   ///
-  /// You can easily omit this if you don't need to call [authorize].
+  /// Used in [authorize], you don't this in [GeniusApiAuth.server()].
   final String clientId;
 
   /// Your application's Client Secret, as listed on the
   /// [API Client management page](https://genius.com/api-clients).
   ///
   /// Used to make a post query to Genius API to get the [GeniusApi.accessToken]
-  /// after user authorizes with [authorize], see [token].
+  /// after user authorizes with [authorize].
   ///
-  /// You can easily omit this if you don't have a server and don't need to call [token].
+  /// Used in [token], you don't this in [GeniusApiAuth.client()].
   final String clientSecret;
 
-  /// The URI that Genius will redirect the user to after they've authorized in your application.
+  /// The URI that Genius will redirect the user to after he has authorized in your application.
   /// It must be the same as the one set for the API client on [management page](https://genius.com/api-clients).
   ///
-  /// Must be provided if you use will use either [authorize] or [token]
+  /// Must be always provided.
   final Uri redirectUri;
 
   /// Default constructor.
@@ -51,7 +51,7 @@ class GeniusApiAuth {
     dynamic redirectUri,
   }) : redirectUri = checkUri(redirectUri);
 
-  /// Creates an auth object for client usage.
+  /// Creates an auth object for the client usage.
   /// See [authorize].
   ///
   /// The `redirectUri` in the constructor can be either a [String] or a [Uri].
@@ -70,11 +70,12 @@ class GeniusApiAuth {
         clientId = null,
         assert(clientSecret != null && redirectUri != null);
 
-  /// Constructs the Uri to redirect the user of your application to Genius's authentication page.
+  /// Constructs the [Uri] to redirect the user of your application to Genius's authentication page.
   ///
   /// It allows you to open this Uri by your self, because this part is very platform-dependent.
   /// Example of usage with [openUrlOnDesktop] is implemented in [authorize] method.
-  /// Note that just requesting this method by https GET is pointless, as it returns HTML page.
+  ///
+  /// Note that just requesting this Uri by http GET is pointless, as it returns HTML page.
   ///
   /// On the authentication page the user can choose to allow your application to access Genius on their behalf.
   /// They'll be asked to sign in (or, if necessary, create an account) first.
@@ -82,21 +83,20 @@ class GeniusApiAuth {
   /// This method is intended to be used on client side, so internally it requires
   /// [clientId] and [redirectUri] to be defined on class creation.
   ///
-  /// [scope] is the permissions your application is requesting as a space-separated list
-  /// (see [GeniusApiAuthScope]).
-  /// By default method will only query [GeniusApiAuthScope.me] scope.
+  /// The [scope] is the permissions your application is requesting as a list of [GeniusApiAuthScope].
+  /// By default the method will only query the [GeniusApiAuthScope.me] permission.
   ///
-  /// [state] is a required value that will be returned with the code redirect for
+  /// The [state] is a required value that will be returned with the code redirect for
   /// maintaining arbitrary state through the authorization process.
   /// Defaults to empty string.
   ///
-  /// [responseType] - controls the url the user will be redirected after authentication process.
-  /// Defaults value is [GeniusApiAuthResponseType.code].
+  /// The [responseType] controls the URL the user will be redirected after authentication process.
+  /// Defaults to [GeniusApiAuthResponseType.code].
   ///
   /// If responseType equals to [GeniusApiAuthResponseType.code],
   /// then the user is redirected to `https://YOUR_REDIRECT_URI/?code=CODE&state=SOME_STATE_VALUE`.
   ///
-  /// Your application can exchange the code query parameter from the redirect for an access token by calling [token].
+  /// Your application can exchange the code query parameter from the redirect URL for an access token by calling [token].
   ///
   /// Else if responseType equals to [GeniusApiAuthResponseType.token],
   /// this enables an alternative authentication flow is available for browser-based, client-only applications.
@@ -130,9 +130,10 @@ class GeniusApiAuth {
     });
   }
 
-  /// Function to implement to use the URI from [constructAuthorize], opens browser on desktop platforms by default.
+  /// Function to implement the usage of URI from the [constructAuthorize] method,
+  /// opens browser on desktop platforms by default.
   ///
-  /// See [constructAuthorize] for the full description.
+  /// See [constructAuthorize] and [openUrlOnDesktop] for the full description.
   Future<ProcessResult> authorize({
     List<GeniusApiAuthScope> scope = const [GeniusApiAuthScope.me],
     String state,
@@ -150,15 +151,15 @@ class GeniusApiAuth {
     }
   }
 
-  /// Exchanges code query parameter from the redirect after using [authorize] to the actual [GeniusApi.accessToken]
-  /// by making a POST request.
+  /// Exchanges code query parameter from the redirect URL after [authorize] to the actual [GeniusApi.accessToken]
+  /// by making a POST http request.
   ///
   /// This method is intended to be used on server side, so internally it requires
   /// [clientSecret] and [redirectUri] to be defined on class creation.
   ///
   /// Using this on client-side is dangerous and pointless as you will expose your [clientSecret].
   ///
-  /// [code] is code query parameter from the redirect to your [redirectUri] in [authorize].
+  /// The [code] is code query parameter from the redirect to your [redirectUri] in [authorize].
   ///
   /// Throws [GeniusApiException] ([GeniusApiException.apiRequest] will be null).
   Future<void> token(String code) async {
@@ -197,11 +198,10 @@ class GeniusApiAuth {
 
 /// The scopes that restrict what Genius API methods you can access with the [GeniusApi.accessToken].
 ///
-/// Access tokens can only be used for resources that
-/// are covered by the scopes provided when they created,
+/// Access tokens can only be used for resources that are covered by the scopes provided when they are created,
 /// these are the available scopes.
 ///
-/// See [available scopes](https://docs.genius.com/#/available-scopes) on Api doc page.
+/// See [available scopes](https://docs.genius.com/#/available-scopes) on the official API doc page.
 enum GeniusApiAuthScope {
   /// Endpoint
   /// ```
@@ -231,9 +231,7 @@ enum GeniusApiAuthScope {
   vote,
 }
 
-/// For [GeniusApiAuth.authorize] responseType parameter.
-///
-/// For more info see [GeniusApiAuth.constructAuthorize].
+/// The response type for the [GeniusApiAuth.constructAuthorize] responseType parameter.
 enum GeniusApiAuthResponseType {
   /// The user will be redirected to `https://YOUR_REDIRECT_URI/?code=CODE&state=SOME_STATE_VALUE`.
   code,

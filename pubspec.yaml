@@ -1,7 +1,10 @@
 name: genius_api_unofficial
-description: A starting point for Dart libraries or applications.
-# version: 1.0.0
-# homepage: https://www.example.com
+description: This library provides you with a nice interface to Genius API.
+version: 1.0.0
+homepage: https://github.com/nt4f04uNd/genius_api_unofficial
+repository: https://github.com/nt4f04uNd/genius_api_unofficial
+issue_tracker: https://github.com/nt4f04uNd/genius_api_unofficial/issues
+
 
 environment:
   sdk: '>=2.7.0 <3.0.0'
@@ -9,8 +12,7 @@ environment:
 dependencies:
   meta: ^1.1.8
   http: ^0.12.0+4
-#  path: ^1.6.0
-
+  
 dev_dependencies:
   pedantic: ^1.8.0
   test: ^1.6.0
