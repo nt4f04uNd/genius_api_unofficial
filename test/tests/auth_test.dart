@@ -73,7 +73,7 @@ void main() {
         'token method test',
         () async {
           expect(
-            await auth.token(config.exchangeCode),
+            await auth.token(config.exchangeCode!),
             isA<String>(),
           );
         },

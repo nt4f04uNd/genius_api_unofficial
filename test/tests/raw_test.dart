@@ -8,6 +8,8 @@ import 'package:test/test.dart';
 
 import '../tests.dart';
 
+// TODO: test asserts
+
 void main() {
   final config = TestConfig.fromJsonConfig();
 
@@ -17,7 +19,7 @@ void main() {
 
   final api = GeniusApiRaw(
     accessToken: config.accessTokenUserAll,
-    defaultOptions: GeniusApiOptions(textFormat: GeniusApiTextFormat.plain),
+    defaultOptions: const GeniusApiOptions(textFormat: GeniusApiTextFormat.plain),
   );
 
   //****************** Annotation tests ************************
@@ -25,7 +27,7 @@ void main() {
     'Annotations |',
     () {
       /// Will be gotten from the call of [GeniusApiRaw.postCreateAnnotation].
-      int annotationId;
+      late int annotationId;
 
       test(
         'Create annotation',
@@ -41,10 +43,10 @@ void main() {
               referentBeforeHtml: 'You may know that you can ',
               referentAfterHtml: ' from inside of vim, with a vim command:',
               webPageTitle: 'Secret of Mana',
-              options: GeniusApiOptions(textFormat: GeniusApiTextFormat.html),
+              options: const GeniusApiOptions(textFormat: GeniusApiTextFormat.html),
             )
                 .then((res) {
-              annotationId = res.data['annotation']['id'];
+              annotationId = res.data!['annotation']['id'];
               return res;
             }),
             isA<GeniusApiResponse>(),
@@ -76,7 +78,7 @@ void main() {
               referentBeforeHtml: 'You may know that you can ',
               referentAfterHtml: ' from inside of vim, with a vim command:',
               webPageTitle: 'Secret of Mana',
-              options: GeniusApiOptions(textFormat: GeniusApiTextFormat.html),
+              options: const GeniusApiOptions(textFormat: GeniusApiTextFormat.html),
             ),
             isA<GeniusApiResponse>(),
             skip: skipExpect,

@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import 'package:genius_api_unofficial/genius_api_unofficial.dart';
-import 'package:meta/meta.dart';
 
 import 'auth.dart';
 
@@ -19,8 +18,8 @@ class GeniusApiRaw extends GeniusApi {
   /// * More info about accessToken: [GeniusApi.accessToken].
   /// * More info about defaultOptions: [GeniusApi.defaultOptions].
   GeniusApiRaw({
-    String accessToken,
-    GeniusApiOptions defaultOptions,
+    String? accessToken,
+    GeniusApiOptions? defaultOptions,
   }) : super(
           accessToken: accessToken,
           defaultOptions: defaultOptions,
@@ -40,9 +39,8 @@ class GeniusApiRaw extends GeniusApi {
   /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> getAnnotation(
     int id, {
-    GeniusApiOptions options,
+    GeniusApiOptions? options,
   }) async {
-    assert(id != null);
     options = combineOptions(options);
     return get(
       Uri.https(GeniusApi.baseUrl, 'annotations/$id', {
@@ -85,15 +83,15 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> postCreateAnnotation({
-    @required String annotationMarkdown,
-    @required Uri referentRawAnnotatableUrl,
-    @required String referentFragment,
-    String referentBeforeHtml,
-    String referentAfterHtml,
-    Uri webPageCanonicalUrl,
-    Uri webPageOgUrl,
-    String webPageTitle,
-    GeniusApiOptions options,
+    required String annotationMarkdown,
+    required Uri referentRawAnnotatableUrl,
+    required String referentFragment,
+    String? referentBeforeHtml,
+    String? referentAfterHtml,
+    Uri? webPageCanonicalUrl,
+    Uri? webPageOgUrl,
+    String? webPageTitle,
+    GeniusApiOptions? options,
   }) async {
     options = combineOptions(options);
     return post(
@@ -149,17 +147,16 @@ class GeniusApiRaw extends GeniusApi {
   /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> putUpdateAnnotation(
     int id, {
-    @required String annotationMarkdown,
-    @required Uri referentRawAnnotatableUrl,
-    @required String referentFragment,
-    String referentBeforeHtml,
-    String referentAfterHtml,
-    Uri webPageCanonicalUrl,
-    Uri webPageOgUrl,
-    String webPageTitle,
-    GeniusApiOptions options,
+    required String annotationMarkdown,
+    required Uri referentRawAnnotatableUrl,
+    required String referentFragment,
+    String? referentBeforeHtml,
+    String? referentAfterHtml,
+    Uri? webPageCanonicalUrl,
+    Uri? webPageOgUrl,
+    String? webPageTitle,
+    GeniusApiOptions? options,
   }) async {
-    assert(id != null);
     options = combineOptions(options);
     return put(
       Uri.https(GeniusApi.baseUrl, 'annotations/$id'),
@@ -190,9 +187,8 @@ class GeniusApiRaw extends GeniusApi {
   /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> deleteAnnotation(
     int id, {
-    GeniusApiOptions options,
+    GeniusApiOptions? options,
   }) async {
-    assert(id != null);
     options = combineOptions(options);
     return delete(
       Uri.https(GeniusApi.baseUrl, 'annotations/$id'),
@@ -210,9 +206,8 @@ class GeniusApiRaw extends GeniusApi {
   /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> putUpvoteAnnotation(
     int id, {
-    GeniusApiOptions options,
+    GeniusApiOptions? options,
   }) async {
-    assert(id != null);
     options = combineOptions(options);
     return put(
       Uri.https(GeniusApi.baseUrl, 'annotations/$id/upvote', {
@@ -232,9 +227,8 @@ class GeniusApiRaw extends GeniusApi {
   /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> putDownvoteAnnotation(
     int id, {
-    GeniusApiOptions options,
+    GeniusApiOptions? options,
   }) async {
-    assert(id != null);
     options = combineOptions(options);
     return put(
       Uri.https(GeniusApi.baseUrl, 'annotations/$id/downvote', {
@@ -254,9 +248,8 @@ class GeniusApiRaw extends GeniusApi {
   /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> putUnvoteAnnotation(
     int id, {
-    GeniusApiOptions options,
+    GeniusApiOptions? options,
   }) async {
-    assert(id != null);
     options = combineOptions(options);
     return put(
       Uri.https(GeniusApi.baseUrl, 'annotations/$id/unvote', {
@@ -272,19 +265,13 @@ class GeniusApiRaw extends GeniusApi {
     String annotationMarkdown,
     Uri referentRawAnnotatableUrl,
     String referentFragment,
-    String referentBeforeHtml,
-    String referentAfterHtml,
-    Uri webPageCanonicalUrl,
-    Uri webPageOgUrl,
-    String webPageTitle,
-    GeniusApiTextFormat textFormat,
+    String? referentBeforeHtml,
+    String? referentAfterHtml,
+    Uri? webPageCanonicalUrl,
+    Uri? webPageOgUrl,
+    String? webPageTitle,
+    GeniusApiTextFormat? textFormat,
   ) {
-    assert(
-      annotationMarkdown != null &&
-          referentRawAnnotatableUrl != null &&
-          referentFragment != null,
-      'These are required parameters',
-    );
     assert(
       webPageCanonicalUrl != null ||
           webPageOgUrl != null ||
@@ -341,12 +328,12 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> getReferents({
-    int createdById,
-    int songId,
-    int webPageId,
-    int perPage,
-    int page,
-    GeniusApiOptions options,
+    int? createdById,
+    int? songId,
+    int? webPageId,
+    int? perPage,
+    int? page,
+    GeniusApiOptions? options,
   }) async {
     assert(
       createdById != null || songId != null || webPageId != null,
@@ -383,9 +370,8 @@ class GeniusApiRaw extends GeniusApi {
   /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> getSong(
     int id, {
-    GeniusApiOptions options,
+    GeniusApiOptions? options,
   }) async {
-    assert(id != null);
     options = combineOptions(options);
     return get(
       Uri.https(GeniusApi.baseUrl, 'songs/$id', {
@@ -406,9 +392,8 @@ class GeniusApiRaw extends GeniusApi {
   /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> getArtist(
     int id, {
-    GeniusApiOptions options,
+    GeniusApiOptions? options,
   }) async {
-    assert(id != null);
     options = combineOptions(options);
     return get(
       Uri.https(GeniusApi.baseUrl, 'artists/$id', {
@@ -433,12 +418,11 @@ class GeniusApiRaw extends GeniusApi {
   /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> getArtistSongs(
     int id, {
-    GeniusApiSort sort,
-    int perPage,
-    int page,
-    GeniusApiOptions options,
+    GeniusApiSort? sort,
+    int? perPage,
+    int? page,
+    GeniusApiOptions? options,
   }) async {
-    assert(id != null);
     options = combineOptions(options);
     return get(
       Uri.https(GeniusApi.baseUrl, 'artists/$id/songs', {
@@ -472,10 +456,10 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> getLookupWebpages({
-    Uri rawAnnotatableUrl,
-    Uri canonicalUrl,
-    Uri ogUrl,
-    GeniusApiOptions options,
+    Uri? rawAnnotatableUrl,
+    Uri? canonicalUrl,
+    Uri? ogUrl,
+    GeniusApiOptions? options,
   }) async {
     assert(
       rawAnnotatableUrl != null || canonicalUrl != null || ogUrl != null,
@@ -502,12 +486,12 @@ class GeniusApiRaw extends GeniusApi {
   /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> getSearch(
     String query, {
-    GeniusApiOptions options,
+    GeniusApiOptions? options,
   }) async {
     options = combineOptions(options);
     return get(
       Uri.https(GeniusApi.baseUrl, '/search', {
-        if (query != null) 'q': query,
+        'q': query,
       }),
       options,
       textFormatApplicable: false,
@@ -520,7 +504,7 @@ class GeniusApiRaw extends GeniusApi {
   ///
   /// [options] are the new call options to override [defaultOptions] for this request.
   Future<GeniusApiResponse> getAccount({
-    GeniusApiOptions options,
+    GeniusApiOptions? options,
   }) async {
     options = combineOptions(options);
     return get(

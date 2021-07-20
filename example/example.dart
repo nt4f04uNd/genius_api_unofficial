@@ -26,6 +26,5 @@ Future<void> main() async {
 
   // Get info about song "https://genius.com/Yxngxr1-riley-reid-lyrics".
   final res = await api.getSong(4585202);
-  print(res.data['song']['full_title']); // Outputs "Riley Reid by ​yxngxr1"
-  
+  print(res.data!['song']['full_title']); // Outputs "Riley Reid by ​yxngxr1"
 }
