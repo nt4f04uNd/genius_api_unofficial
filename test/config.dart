@@ -5,11 +5,7 @@
 
 import 'tests.dart';
 
-import 'package:json_annotation/json_annotation.dart';
-
 part 'config.g.dart';
-
-@JsonSerializable()
 
 /// Serializable test config, allows to easily configure the tests.
 ///
@@ -50,64 +46,64 @@ class TestConfig {
   });
 
   /// [GeniusApiAuth.accessToken] that you get on Genius Api management page.
-  final String accessTokenClient;
+  final String? accessTokenClient;
 
   /// [GeniusApiAuth.accessToken] that is user-specific (gotten from the auth methods).
-  final String accessTokenUser;
+  final String? accessTokenUser;
 
   /// [GeniusApiAuth.accessToken] that is user-specific (gotten from the auth methods).
   ///
   /// Additional scopes:
   /// [GeniusApiAuthScope.me].
-  final String accessTokenUserMe;
+  final String? accessTokenUserMe;
 
   /// [GeniusApiAuth.accessToken] that is user-specific (gotten from the auth methods).
   ///
   /// Additional scopes:
   /// [GeniusApiAuthScope.create_annotation].
-  final String accessTokenUserCreateAnnotation;
+  final String? accessTokenUserCreateAnnotation;
 
   /// [GeniusApiAuth.accessToken] that is user-specific (gotten from the auth methods).
   ///
   /// Additional scopes:
   /// [GeniusApiAuthScope.manage_annotation].
-  final String accessTokenUserManageAnnotation;
+  final String? accessTokenUserManageAnnotation;
 
   /// [GeniusApiAuth.accessToken] that is user-specific (gotten from the auth methods).
   ///
   /// Additional scopes:
   /// [GeniusApiAuthScope.vote].
-  final String accessTokenUserVote;
+  final String? accessTokenUserVote;
 
   /// [GeniusApiAuth.accessToken] that is user-specific (gotten from the auth methods).
   ///
   /// Additional scopes - all: [GeniusApiAuthScope.values].
-  final String accessTokenUserAll;
+  final String? accessTokenUserAll;
 
   /// [GeniusApiAuth.clientId].
-  final String clientId;
+  final String? clientId;
 
   /// [GeniusApiAuth.clientSecret].
-  final String clientSecret;
+  final String? clientSecret;
 
   /// [GeniusApiAuth.redirectUri].
-  final String redirectUri;
+  final String? redirectUri;
 
   /// Code returned in the redirected url after calling [GeniusApiAuth.authorize] method
   /// with [GeniusApiAuthResponseType.code].
   /// Can be used once in the [GeniusApiAuth.token].
-  final String exchangeCode;
+  final String? exchangeCode;
 
   /// Variable to configure test skipping,
   /// every [group] should include this.
   /// This allows to disable all [group]s in some group except one or some.
-  final bool skipGroup;
+  final bool? skipGroup;
 
   /// Same as [skipGroup] but for [test]s.
-  final bool skipTest;
+  final bool? skipTest;
 
   /// Same as [skipGroup] but for [expect]s.
-  final bool skipExpect;
+  final bool? skipExpect;
 
   /// Constructs object from JSON map.
   factory TestConfig.fromJson(Map<String, dynamic> json) =>
@@ -118,7 +114,7 @@ class TestConfig {
   /// The [configUri] is the path to the config file.
   /// Defaults to `Uri.file('test/config.json', windows: true)`,
   /// that means that it has to be in the same `test` dir as this class.
-  factory TestConfig.fromJsonConfig({Uri configUri}) {
+  factory TestConfig.fromJsonConfig({Uri? configUri}) {
     configUri ??= Uri.file('test/config.json', windows: true);
     final file = File.fromUri(configUri);
     if(file.existsSync()){

@@ -8,7 +8,7 @@ import 'tests.dart';
 const JsonEncoder _encoderWithSpace = JsonEncoder.withIndent('  ');
 
 /// Pretty prints JSON to the console.
-void prettyPrintJson(Map<String, dynamic> json) {
+void prettyPrintJson(Map<String, dynamic>? json) {
   final prettyString = _encoderWithSpace.convert(json);
   prettyString.split('\n').forEach((element) => print(element));
 }

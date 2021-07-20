@@ -5,7 +5,7 @@
 
 import 'dart:convert';
 
-import 'package:meta/meta.dart';
+import 'package:enum_to_string/enum_to_string.dart';
 import 'package:http/http.dart' as http;
 
 import 'auth.dart';
@@ -18,14 +18,31 @@ Uri checkUri(dynamic uri) => uri is String ? Uri.parse(uri) : uri;
 
 /// All http methods.
 enum HttpMethod {
+  /// GET method.
   get,
+
+  /// POST method.
   post,
+
+  /// HEAD method.
   head,
+
+  /// PUT method.
   put,
+
+  /// DELETE method.
   delete,
+
+  /// CONNECT method.
   connect,
+
+  /// OPTIONS method.
   options,
+
+  /// TRACE method.
   trace,
+
+  /// PATCH method.
   patch,
 }
 
@@ -33,27 +50,30 @@ enum HttpMethod {
 extension HttpMethodStringValue on HttpMethod {
   /// Returns a string with the value of enum (in upper-case).
   String get stringValue {
-    if (this == null) return 'null';
-    return toString().substring('HttpMethod.'.length).toUpperCase();
+    return EnumToString.convertToString(this).toUpperCase();
   }
 }
 
 /// Represents a single call to Genius API.
 class GeniusApiRequest {
+  /// Creates a Genius API request.
+  ///
+  /// If [options] is null, [GeniusApi.defaultOptions] will be used.
   GeniusApiRequest({
-    @required this.method,
-    @required this.uri,
-    @required this.options,
+    required GeniusApi api,
+    required this.method,
+    required dynamic uri,
+    required GeniusApiOptions? options,
     this.json,
     this.authorized = true,
     this.textFormatApplicable = true,
-  })  : assert(method != null),
-        assert(uri != null),
-        assert(options != null),
-        assert(authorized != null),
-        assert(textFormatApplicable != null) {
-    if (!textFormatApplicable) {
-      options.textFormat = null;
+  }) {
+    this.uri = checkUri(uri);
+    final localOptions = options ?? api.defaultOptions;
+    if (textFormatApplicable) {
+      this.options = localOptions;
+    } else {
+      this.options = localOptions.copyWith(const GeniusApiOptions(textFormat: null));
     }
   }
 
@@ -61,7 +81,10 @@ class GeniusApiRequest {
   final HttpMethod method;
 
   /// Source URI, can be either a [Uri] or a [String].
-  dynamic uri;
+  late final dynamic uri;
+
+  /// Call options for this request, will override [GeniusApi.defaultOptions].
+  late final GeniusApiOptions options;
 
   /// The body data of the request.
   ///
@@ -76,25 +99,23 @@ class GeniusApiRequest {
   ///
   /// It makes option [GeniusApiOptions.textFormat] null if true.
   final bool textFormatApplicable;
-
-  /// Call options for this request, will override [GeniusApi.defaultOptions].
-  GeniusApiOptions options;
 }
 
 /// Options that will be applied for the API calls.
 class GeniusApiOptions {
-  GeniusApiOptions({
+  /// Creats API call options.
+  const GeniusApiOptions({
     this.timeout,
     this.textFormat,
   });
 
   /// Creates default API options.
-  GeniusApiOptions.def()
-      : timeout = Duration(minutes: 2),
+  const GeniusApiOptions.def()
+      : timeout = const Duration(seconds: 20),
         textFormat = null;
 
   /// The maximum duration that a single request can be performed.
-  Duration timeout;
+  final Duration? timeout;
 
   /// The text format requested from the server.
   ///
@@ -105,12 +126,11 @@ class GeniusApiOptions {
   ///  that is currently [GeniusApiTextFormat.dom].
   /// 2. It is not applicable for the method call, because [GeniusApiRequest.textFormatApplicable] is `true`.
   ///
-  GeniusApiTextFormat textFormat;
+  final GeniusApiTextFormat? textFormat;
 
   /// Creates a copy of these API options but with the given fields replaced with
   /// the new values from other instance.
   GeniusApiOptions copyWith(GeniusApiOptions other) {
-    assert(other != null);
     return GeniusApiOptions(
       timeout: other.timeout ?? timeout,
       textFormat: other.textFormat ?? textFormat,
@@ -130,13 +150,12 @@ abstract class GeniusApi {
   /// * More info about defaultOptions: [GeniusApi.defaultOptions].
   GeniusApi({
     this.accessToken,
-    GeniusApiOptions defaultOptions,
+    GeniusApiOptions? defaultOptions,
   }) {
-    final defOptions = GeniusApiOptions.def();
     if (defaultOptions == null) {
-      this.defaultOptions = defOptions;
+      this.defaultOptions = const GeniusApiOptions.def();
     } else {
-      this.defaultOptions = defOptions.copyWith(defaultOptions);
+      this.defaultOptions = const GeniusApiOptions.def().copyWith(defaultOptions);
     }
   }
 
@@ -164,16 +183,16 @@ abstract class GeniusApi {
   ///
   /// You can get a client access token by clicking "Generate Access Token" on the
   /// [API Client management page](https://genius.com/api-clients).
-  final String accessToken;
+  final String? accessToken;
 
   /// Default API options that will be used on every API call (unless you override them for a single API call).
   ///
   /// If omitted, will be initialized with [GeniusApiOptions.def()].
-  GeniusApiOptions defaultOptions;
+  late GeniusApiOptions defaultOptions;
 
   /// Returns [defaultOptions] if [options] is null,
   /// or overrides [defaultOptions] with the new values from [options] argument and returns them.
-  GeniusApiOptions combineOptions(GeniusApiOptions options) =>
+  GeniusApiOptions combineOptions(GeniusApiOptions? options) =>
       options == null ? defaultOptions : defaultOptions.copyWith(options);
 
   /// Shortcut for the [HttpMethod.get] call.
@@ -185,6 +204,7 @@ abstract class GeniusApi {
     bool textFormatApplicable = true,
   }) =>
       send(GeniusApiRequest(
+        api: this,
         method: HttpMethod.get,
         uri: uri,
         authorized: authorized,
@@ -202,6 +222,7 @@ abstract class GeniusApi {
     bool textFormatApplicable = true,
   }) =>
       send(GeniusApiRequest(
+        api: this,
         method: HttpMethod.post,
         uri: uri,
         authorized: authorized,
@@ -219,6 +240,7 @@ abstract class GeniusApi {
     bool textFormatApplicable = true,
   }) =>
       send(GeniusApiRequest(
+        api: this,
         method: HttpMethod.put,
         uri: uri,
         authorized: authorized,
@@ -236,6 +258,7 @@ abstract class GeniusApi {
     bool textFormatApplicable = true,
   }) =>
       send(GeniusApiRequest(
+        api: this,
         method: HttpMethod.delete,
         uri: uri,
         authorized: authorized,
@@ -255,25 +278,23 @@ abstract class GeniusApi {
   /// this must be a work of a caller.
   /// [defaultOptions] only will be used if [GeniusApiRequest.options] is `null`.
   Future<GeniusApiResponse> send(GeniusApiRequest apiRequest) async {
-    apiRequest.uri = checkUri(apiRequest.uri);
-    apiRequest.options ??= defaultOptions;
     final httpRequest =
         http.Request(apiRequest.method.stringValue, apiRequest.uri);
     if (apiRequest.authorized) {
-      httpRequest.headers['Authorization'] = 'Bearer ${accessToken}';
+      httpRequest.headers['Authorization'] = 'Bearer $accessToken';
     }
     if (apiRequest.json != null) {
       httpRequest.headers['Content-Type'] = 'application/json';
       httpRequest.body = jsonEncode(apiRequest.json);
     }
 
-    http.Response res;
+    late http.Response res;
     await Future(() async {
       final streamedResponse = await _client.send(httpRequest);
       res = await http.Response.fromStream(streamedResponse);
-    }).timeout(apiRequest.options.timeout);
+    }).timeout(apiRequest.options.timeout!);
 
-    Map<String, dynamic> responseJson;
+    Map<String, dynamic>? responseJson;
     if (res.statusCode >= 200 && res.statusCode < 300) {
       if (res.statusCode != 204) {
         // Calling this with empty res.body when 204 will cause FormatException
@@ -286,8 +307,8 @@ abstract class GeniusApi {
       );
     } else {
       responseJson = jsonDecode(res.body);
-      var message;
-      if (responseJson['meta'] != null) {
+      String? message;
+      if (responseJson!['meta'] != null) {
         message = responseJson['meta']['message'];
       }
       throw GeniusApiException(
@@ -304,12 +325,11 @@ abstract class GeniusApi {
 
 /// Represents a result of a method call.
 abstract class GeniusApiResult {
-  GeniusApiResult(this.apiRequest);
+  /// Creates API call result.
+  const GeniusApiResult(this.apiRequest);
 
   /// An API call object.
-  ///
-  /// Its [GeniusApiRequest.uri] will be always [Uri].
-  final GeniusApiRequest apiRequest;
+  final GeniusApiRequest? apiRequest;
 }
 
 /// Represents the base of a resulting response for any successful call to Genius API
@@ -317,24 +337,22 @@ abstract class GeniusApiResult {
 ///
 /// See also [GeniusApiException] that will be thrown for unsuccessful calls to the API.
 class GeniusApiResponse implements GeniusApiResult {
-  GeniusApiResponse({
-    @required this.statusCode,
-    @required this.data,
-    @required this.apiRequest,
-  }) : assert(statusCode != null);
+  /// Creates a response for successful API calls.
+  const GeniusApiResponse({
+    required this.statusCode,
+    required this.data,
+    required this.apiRequest,
+  });
 
   /// The HTTP request status code.
-  /// Cannot be `null`.
   final int statusCode;
 
   /// The actual data returned by the API.
   /// Equals to `null` if [statusCode] is `204` - "No content".
-  final Map<String, dynamic> data;
+  final Map<String, dynamic>? data;
 
-  /// An API call object.
-  /// Its [GeniusApiRequest.uri] will be always [Uri].
   @override
-  final apiRequest;
+  final GeniusApiRequest apiRequest;
 
   @override
   String toString() =>
@@ -343,34 +361,36 @@ class GeniusApiResponse implements GeniusApiResult {
 
 /// Exception being thrown when Genius API responses with codes not in range of 2xx.
 class GeniusApiException implements Exception, GeniusApiResult {
-  GeniusApiException({
-    @required this.statusCode,
+  /// Creates a response for unsuccessful API calls.
+  const GeniusApiException({
+    required this.statusCode,
     this.apiRequest,
     this.httpErrorPhrase,
     this.message,
     this.detailedType,
     this.detailedDescription,
-  }) : assert(statusCode != null);
+  });
 
+  /// The HTTP status code for this response.
   final int statusCode;
 
   /// An API call object.
-  /// Its [GeniusApiRequest.uri] will be always [Uri].
   ///
   /// Equals to `null` when thrown out of [GeniusApiAuth.token].
   @override
-  final apiRequest;
+  final GeniusApiRequest? apiRequest;
 
-  final String httpErrorPhrase;
+  /// The reason phrase associated with the status code.
+  final String? httpErrorPhrase;
 
   /// Message contained in the "meta" "message" field of a Genius API response (if present).
-  final String message;
+  final String? message;
 
   /// Message contained in the "error" field of a Genius API response (if present).
-  final String detailedType;
+  final String? detailedType;
 
   /// Message contained in the "error_description" field of a Genius API response (if present).
-  final String detailedDescription;
+  final String? detailedDescription;
 
   @override
   String toString() =>
@@ -397,24 +417,30 @@ enum GeniusApiTextFormat {
 }
 
 /// Extension to serialize the value of [GeniusApiTextFormat].
-extension GeniusApiTextFormatStringValue on GeniusApiTextFormat {
+extension GeniusApiTextFormatStringValue on GeniusApiTextFormat? {
   /// Returns a string with the value of enum.
   String get stringValue {
-    if (this == null) return 'null';
-    return toString().substring('GeniusApiTextFormat.'.length);
+    return EnumToString.convertToString(this);
   }
 }
 
 /// A sort feature.
+///
 /// Used in [GeniusApiRaw.getArtistSongs] method.
+///
 /// The default for the API is [title].
-enum GeniusApiSort { title, popularity }
+enum GeniusApiSort {
+  /// Sort alphabetically.
+  title,
+
+  /// Sort by popularity.
+  popularity,
+}
 
 /// Extension to serialize the value of [GeniusApiSort].
 extension GeniusApiSortStringValue on GeniusApiSort {
   /// Returns a string with the value of enum.
   String get stringValue {
-    if (this == null) return 'null';
-    return toString().substring('GeniusApiSort.'.length);
+    return EnumToString.convertToString(this);
   }
 }

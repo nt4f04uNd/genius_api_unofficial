@@ -6,6 +6,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:enum_to_string/enum_to_string.dart';
+
 import 'core.dart';
 import 'utils.dart';
 import 'package:meta/meta.dart';
@@ -23,7 +25,7 @@ class GeniusApiAuth {
   /// into Genius API, see [authorize].
   ///
   /// Used in [authorize], you don't this in [GeniusApiAuth.server()].
-  final String clientId;
+  final String? clientId;
 
   /// Your application's Client Secret, as listed on the
   /// [API Client management page](https://genius.com/api-clients).
@@ -32,7 +34,7 @@ class GeniusApiAuth {
   /// after user authorizes with [authorize].
   ///
   /// Used in [token], you don't this in [GeniusApiAuth.client()].
-  final String clientSecret;
+  final String? clientSecret;
 
   /// The URI that Genius will redirect the user to after he has authorized in your application.
   /// It must be the same as the one set for the API client on [management page](https://genius.com/api-clients).
@@ -42,9 +44,10 @@ class GeniusApiAuth {
 
   /// Default constructor.
   ///
+  /// Prefer using named constructors instead of it as there's no actual reason to specify together both [clientId] and [clientSecret]
+  ///
   /// The `redirectUri` in the constructor can be either a [String] or a [Uri].
-  @Deprecated(
-      "Prefer using named constructors instead of it as there's no actual reason to specify together both [clientId] and [clientSecret]")
+  @visibleForTesting
   GeniusApiAuth({
     this.clientId,
     this.clientSecret,
@@ -55,7 +58,7 @@ class GeniusApiAuth {
   /// See [authorize].
   ///
   /// The `redirectUri` in the constructor can be either a [String] or a [Uri].
-  GeniusApiAuth.client({@required this.clientId, @required dynamic redirectUri})
+  GeniusApiAuth.client({required this.clientId, required dynamic redirectUri})
       : redirectUri = checkUri(redirectUri),
         clientSecret = null,
         assert(clientId != null && redirectUri != null);
@@ -64,8 +67,7 @@ class GeniusApiAuth {
   /// See [token].
   ///
   /// The `redirectUri` in the constructor can be either a [String] or a [Uri].
-  GeniusApiAuth.server(
-      {@required this.clientSecret, @required dynamic redirectUri})
+  GeniusApiAuth.server({required this.clientSecret, required dynamic redirectUri})
       : redirectUri = checkUri(redirectUri),
         clientId = null,
         assert(clientSecret != null && redirectUri != null);
@@ -113,7 +115,7 @@ class GeniusApiAuth {
   /// Don't use the token flow if you don't have to.
   Uri constructAuthorize({
     List<GeniusApiAuthScope> scope = const [GeniusApiAuthScope.me],
-    String state,
+    String? state,
     GeniusApiAuthResponseType responseType = GeniusApiAuthResponseType.code,
   }) {
     assert(clientId != null,
@@ -136,7 +138,7 @@ class GeniusApiAuth {
   /// See [constructAuthorize] and [openUrlOnDesktop] for the full description.
   Future<ProcessResult> authorize({
     List<GeniusApiAuthScope> scope = const [GeniusApiAuthScope.me],
-    String state,
+    String? state,
     GeniusApiAuthResponseType responseType = GeniusApiAuthResponseType.code,
   }) {
     try {
@@ -162,7 +164,7 @@ class GeniusApiAuth {
   /// The [code] is code query parameter from the redirect to your [redirectUri] in [authorize].
   ///
   /// Throws [GeniusApiException] ([GeniusApiException.apiRequest] will be null).
-  Future<void> token(String code) async {
+  Future<String> token(String code) async {
     assert(clientSecret != null,
         "You haven't specified [clientSecret] for using this method");
 
@@ -181,7 +183,7 @@ class GeniusApiAuth {
     if (res.statusCode >= 200 && res.statusCode < 300) {
       return json['access_token'];
     } else {
-      var message;
+      String? message;
       if (json['meta'] != null) {
         message = json['meta']['message'];
       }
@@ -213,14 +215,18 @@ enum GeniusApiAuthScope {
   /// ```
   /// POST /annotations
   /// ```
-  create_annotation,
+
+  // ignore: constant_identifier_names
+  create_annotation, // for easy serialization in [GeniusApiAuthScopeStringValue] keep it snake case
 
   /// Endpoints
   /// ```
   /// PUT /annotations/:id
   /// DELETE /annotations/:id
   /// ```
-  manage_annotation,
+
+  // ignore: constant_identifier_names
+  manage_annotation, // for easy serialization in [GeniusApiAuthScopeStringValue] keep it snake case
 
   /// Endpoints
   /// ```
@@ -244,8 +250,7 @@ enum GeniusApiAuthResponseType {
 extension GeniusApiAuthScopeStringValue on GeniusApiAuthScope {
   /// Returns a string with the value of enum
   String get stringValue {
-    if (this == null) return 'null';
-    return toString().substring('GeniusApiAuthScope.'.length);
+    return EnumToString.convertToString(this);
   }
 }
 
@@ -253,7 +258,6 @@ extension GeniusApiAuthScopeStringValue on GeniusApiAuthScope {
 extension GeniusApiAuthResponseTypeStringValue on GeniusApiAuthResponseType {
   /// Returns a string with the value of enum.
   String get stringValue {
-    if (this == null) return 'null';
-    return toString().substring('GeniusApiAuthResponseType.'.length);
+    return EnumToString.convertToString(this);
   }
 }
