@@ -45,7 +45,7 @@ class GeniusApiRaw extends GeniusApi {
     assert(id != null);
     options = combineOptions(options);
     return get(
-      Uri.https(GeniusApi.baseUrl, 'annotations/${id}', {
+      Uri.https(GeniusApi.baseUrl, 'annotations/$id', {
         if (options.textFormat != null)
           'text_format': options.textFormat.stringValue,
       }),
@@ -162,7 +162,7 @@ class GeniusApiRaw extends GeniusApi {
     assert(id != null);
     options = combineOptions(options);
     return put(
-      Uri.https(GeniusApi.baseUrl, 'annotations/${id}'),
+      Uri.https(GeniusApi.baseUrl, 'annotations/$id'),
       options,
       json: _constructAnnotationRequestBody(
         annotationMarkdown,
@@ -195,7 +195,7 @@ class GeniusApiRaw extends GeniusApi {
     assert(id != null);
     options = combineOptions(options);
     return delete(
-      Uri.https(GeniusApi.baseUrl, 'annotations/${id}'),
+      Uri.https(GeniusApi.baseUrl, 'annotations/$id'),
       options,
       textFormatApplicable: false,
     );
@@ -215,7 +215,7 @@ class GeniusApiRaw extends GeniusApi {
     assert(id != null);
     options = combineOptions(options);
     return put(
-      Uri.https(GeniusApi.baseUrl, 'annotations/${id}/upvote', {
+      Uri.https(GeniusApi.baseUrl, 'annotations/$id/upvote', {
         if (options.textFormat != null)
           'text_format': options.textFormat.stringValue,
       }),
@@ -237,7 +237,7 @@ class GeniusApiRaw extends GeniusApi {
     assert(id != null);
     options = combineOptions(options);
     return put(
-      Uri.https(GeniusApi.baseUrl, 'annotations/${id}/downvote', {
+      Uri.https(GeniusApi.baseUrl, 'annotations/$id/downvote', {
         if (options.textFormat != null)
           'text_format': options.textFormat.stringValue,
       }),
@@ -259,7 +259,7 @@ class GeniusApiRaw extends GeniusApi {
     assert(id != null);
     options = combineOptions(options);
     return put(
-      Uri.https(GeniusApi.baseUrl, 'annotations/${id}/unvote', {
+      Uri.https(GeniusApi.baseUrl, 'annotations/$id/unvote', {
         if (options.textFormat != null)
           'text_format': options.textFormat.stringValue,
       }),
@@ -388,7 +388,7 @@ class GeniusApiRaw extends GeniusApi {
     assert(id != null);
     options = combineOptions(options);
     return get(
-      Uri.https(GeniusApi.baseUrl, 'songs/${id}', {
+      Uri.https(GeniusApi.baseUrl, 'songs/$id', {
         if (options.textFormat != null)
           'text_format': options.textFormat.stringValue,
       }),
@@ -411,7 +411,7 @@ class GeniusApiRaw extends GeniusApi {
     assert(id != null);
     options = combineOptions(options);
     return get(
-      Uri.https(GeniusApi.baseUrl, 'artists/${id}', {
+      Uri.https(GeniusApi.baseUrl, 'artists/$id', {
         if (options.textFormat != null)
           'text_format': options.textFormat.stringValue,
       }),
@@ -441,7 +441,7 @@ class GeniusApiRaw extends GeniusApi {
     assert(id != null);
     options = combineOptions(options);
     return get(
-      Uri.https(GeniusApi.baseUrl, 'artists/${id}/songs', {
+      Uri.https(GeniusApi.baseUrl, 'artists/$id/songs', {
         if (sort != null) 'sort': sort.stringValue,
         if (perPage != null) 'per_page': perPage.toString(),
         if (page != null) 'page': page.toString(),

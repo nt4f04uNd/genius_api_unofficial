@@ -5,11 +5,7 @@
 
 import 'tests.dart';
 
-import 'package:json_annotation/json_annotation.dart';
-
 part 'config.g.dart';
-
-@JsonSerializable()
 
 /// Serializable test config, allows to easily configure the tests.
 ///

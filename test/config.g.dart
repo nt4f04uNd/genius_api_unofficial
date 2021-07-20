@@ -11,10 +11,8 @@ TestConfig _$TestConfigFromJson(Map<String, dynamic> json) {
     accessTokenClient: json['accessTokenClient'] as String,
     accessTokenUser: json['accessTokenUser'] as String,
     accessTokenUserMe: json['accessTokenUserMe'] as String,
-    accessTokenUserCreateAnnotation:
-        json['accessTokenUserCreateAnnotation'] as String,
-    accessTokenUserManageAnnotation:
-        json['accessTokenUserManageAnnotation'] as String,
+    accessTokenUserCreateAnnotation: json['accessTokenUserCreateAnnotation'] as String,
+    accessTokenUserManageAnnotation: json['accessTokenUserManageAnnotation'] as String,
     accessTokenUserVote: json['accessTokenUserVote'] as String,
     accessTokenUserAll: json['accessTokenUserAll'] as String,
     clientId: json['clientId'] as String,

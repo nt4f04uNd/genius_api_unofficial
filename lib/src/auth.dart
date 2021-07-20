@@ -42,9 +42,10 @@ class GeniusApiAuth {
 
   /// Default constructor.
   ///
+  /// Prefer using named constructors instead of it as there's no actual reason to specify together both [clientId] and [clientSecret]
+  ///
   /// The `redirectUri` in the constructor can be either a [String] or a [Uri].
-  @Deprecated(
-      "Prefer using named constructors instead of it as there's no actual reason to specify together both [clientId] and [clientSecret]")
+  @visibleForTesting
   GeniusApiAuth({
     this.clientId,
     this.clientSecret,
@@ -162,7 +163,7 @@ class GeniusApiAuth {
   /// The [code] is code query parameter from the redirect to your [redirectUri] in [authorize].
   ///
   /// Throws [GeniusApiException] ([GeniusApiException.apiRequest] will be null).
-  Future<void> token(String code) async {
+  Future<String> token(String code) async {
     assert(clientSecret != null,
         "You haven't specified [clientSecret] for using this method");
 

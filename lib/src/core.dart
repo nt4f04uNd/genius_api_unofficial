@@ -260,7 +260,7 @@ abstract class GeniusApi {
     final httpRequest =
         http.Request(apiRequest.method.stringValue, apiRequest.uri);
     if (apiRequest.authorized) {
-      httpRequest.headers['Authorization'] = 'Bearer ${accessToken}';
+      httpRequest.headers['Authorization'] = 'Bearer $accessToken';
     }
     if (apiRequest.json != null) {
       httpRequest.headers['Content-Type'] = 'application/json';

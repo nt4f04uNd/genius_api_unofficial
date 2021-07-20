@@ -8,28 +8,23 @@ import 'package:test/test.dart';
 
 import '../config.dart';
 
+// TODO: better tests with mocks
+
 void main() {
   final config = TestConfig.fromJsonConfig();
 
   final skipGroup = config.skipGroup;
   final skipTest = config.skipTest;
 
-  GeniusApiAuth auth;
+  final auth = GeniusApiAuth(
+    clientId: config.clientId,
+    clientSecret: config.clientSecret,
+    redirectUri: config.redirectUri,
+  );
+
   group(
     'Auth constructors | ',
     () {
-      test(
-        'Default',
-        () {
-          auth = GeniusApiAuth(
-            clientId: config.clientId,
-            clientSecret: config.clientSecret,
-            redirectUri: config.redirectUri,
-          );
-        },
-        // skip: skipTest,
-      );
-
       test(
         'Client',
         () {
@@ -38,7 +33,7 @@ void main() {
             redirectUri: config.redirectUri,
           );
         },
-        // skip: skipTest,
+        skip: skipTest,
       );
 
       test(
@@ -49,10 +44,9 @@ void main() {
             redirectUri:config.redirectUri,
           );
         },
-        // skip: skipTest,
       );
     },
-    // skip: skipGroup,
+    skip: skipGroup,
   );
 
   //****************** Methods group *****************************************************
@@ -78,7 +72,10 @@ void main() {
       test(
         'token method test',
         () async {
-          await auth.token(config.exchangeCode);
+          expect(
+            await auth.token(config.exchangeCode),
+            isA<String>(),
+          );
         },
         skip: skipTest,
       );

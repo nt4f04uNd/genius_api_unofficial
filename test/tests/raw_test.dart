@@ -233,7 +233,7 @@ void main() {
 
   //****************** Artists tests ************************
   group(
-    'Artists test',
+    'Artists |',
     () {
       test(
         'Get artist',
@@ -266,7 +266,7 @@ void main() {
 
   //****************** Webpage tests ************************
   group(
-    'Webpage test',
+    'Webpage |',
     () {
       test(
         'Get webpage',
@@ -288,7 +288,7 @@ void main() {
 
   //****************** Search tests ************************
   group(
-    'Search test',
+    'Search |',
     () {
       test(
         'Search for songs',
@@ -308,7 +308,7 @@ void main() {
 
   //****************** Account tests ************************
   group(
-    'Account test',
+    'Account |',
     () {
       test(
         'Get all user information',
