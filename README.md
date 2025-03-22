@@ -1,5 +1,5 @@
 
-[![Codecov](https://codecov.io/gh/nt4f04uNd/genius_api_unofficial/branch/master/graph/badge.svg)](https://codecov.io/gh/nt4f04uNd/genius_api_unofficial)
+[![pub package](https://img.shields.io/pub/v/genius_api_unofficial.svg)](https://pub.dev/packages/genius_api_unofficial) [![Codecov](https://codecov.io/gh/nt4f04uNd/genius_api_unofficial/branch/master/graph/badge.svg)](https://codecov.io/gh/nt4f04uNd/genius_api_unofficial)
 
 # Use Genius Lyrics API with ease
 
