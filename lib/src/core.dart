@@ -1,11 +1,5 @@
-/*---------------------------------------------------------------------------------------------
-*  Copyright (c) nt4f04und. All rights reserved.
-*  Licensed under the BSD-style license. See LICENSE in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
-
 import 'dart:convert';
 
-import 'package:enum_to_string/enum_to_string.dart';
 import 'package:http/http.dart' as http;
 
 import 'auth.dart';
@@ -46,14 +40,6 @@ enum HttpMethod {
   patch,
 }
 
-/// Extension to serialize the value of [HttpMethod].
-extension HttpMethodStringValue on HttpMethod {
-  /// Returns a string with the value of enum (in upper-case).
-  String get stringValue {
-    return EnumToString.convertToString(this).toUpperCase();
-  }
-}
-
 /// Represents a single call to Genius API.
 class GeniusApiRequest {
   /// Creates a Genius API request.
@@ -73,7 +59,8 @@ class GeniusApiRequest {
     if (textFormatApplicable) {
       this.options = localOptions;
     } else {
-      this.options = localOptions.copyWith(const GeniusApiOptions(textFormat: null));
+      this.options =
+          localOptions.copyWith(const GeniusApiOptions(textFormat: null));
     }
   }
 
@@ -155,7 +142,8 @@ abstract class GeniusApi {
     if (defaultOptions == null) {
       this.defaultOptions = const GeniusApiOptions.def();
     } else {
-      this.defaultOptions = const GeniusApiOptions.def().copyWith(defaultOptions);
+      this.defaultOptions =
+          const GeniusApiOptions.def().copyWith(defaultOptions);
     }
   }
 
@@ -278,8 +266,7 @@ abstract class GeniusApi {
   /// this must be a work of a caller.
   /// [defaultOptions] only will be used if [GeniusApiRequest.options] is `null`.
   Future<GeniusApiResponse> send(GeniusApiRequest apiRequest) async {
-    final httpRequest =
-        http.Request(apiRequest.method.stringValue, apiRequest.uri);
+    final httpRequest = http.Request(apiRequest.method.name, apiRequest.uri);
     if (apiRequest.authorized) {
       httpRequest.headers['Authorization'] = 'Bearer $accessToken';
     }
@@ -416,14 +403,6 @@ enum GeniusApiTextFormat {
   dom
 }
 
-/// Extension to serialize the value of [GeniusApiTextFormat].
-extension GeniusApiTextFormatStringValue on GeniusApiTextFormat? {
-  /// Returns a string with the value of enum.
-  String get stringValue {
-    return EnumToString.convertToString(this);
-  }
-}
-
 /// A sort feature.
 ///
 /// Used in [GeniusApiRaw.getArtistSongs] method.
@@ -435,12 +414,4 @@ enum GeniusApiSort {
 
   /// Sort by popularity.
   popularity,
-}
-
-/// Extension to serialize the value of [GeniusApiSort].
-extension GeniusApiSortStringValue on GeniusApiSort {
-  /// Returns a string with the value of enum.
-  String get stringValue {
-    return EnumToString.convertToString(this);
-  }
 }

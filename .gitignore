@@ -10,5 +10,8 @@ build/
 # Directory created by dartdoc
 doc/api/
 
-# Ignore test config as it is considered private
-test/config.json
+# Ignore test .env files
+.env/
+
+# Coverage results
+coverage

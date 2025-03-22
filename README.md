@@ -1,4 +1,6 @@
 
+[![Codecov](https://codecov.io/gh/nt4f04uNd/genius_api_unofficial/branch/master/graph/badge.svg)](https://codecov.io/gh/nt4f04uNd/genius_api_unofficial)
+
 # Use Genius Lyrics API with ease
 
 This library provides you with a nice interface to Genius API.

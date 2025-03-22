@@ -1,15 +1,6 @@
-/*---------------------------------------------------------------------------------------------
-*  Copyright (c) nt4f04und. All rights reserved.
-*  Licensed under the BSD-style license. See LICENSE in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
-
 import 'dart:convert';
-import 'dart:io';
-
-import 'package:enum_to_string/enum_to_string.dart';
 
 import 'core.dart';
-import 'utils.dart';
 import 'package:meta/meta.dart';
 import 'package:http/http.dart' as http;
 
@@ -58,8 +49,10 @@ class GeniusApiAuth {
   /// See [authorize].
   ///
   /// The `redirectUri` in the constructor can be either a [String] or a [Uri].
-  GeniusApiAuth.client({required this.clientId, required dynamic redirectUri})
-      : redirectUri = checkUri(redirectUri),
+  GeniusApiAuth.client({
+    required this.clientId,
+    required dynamic redirectUri,
+  })  : redirectUri = checkUri(redirectUri),
         clientSecret = null,
         assert(clientId != null && redirectUri != null);
 
@@ -67,15 +60,16 @@ class GeniusApiAuth {
   /// See [token].
   ///
   /// The `redirectUri` in the constructor can be either a [String] or a [Uri].
-  GeniusApiAuth.server({required this.clientSecret, required dynamic redirectUri})
-      : redirectUri = checkUri(redirectUri),
+  GeniusApiAuth.server({
+    required this.clientSecret,
+    required dynamic redirectUri,
+  })  : redirectUri = checkUri(redirectUri),
         clientId = null,
         assert(clientSecret != null && redirectUri != null);
 
   /// Constructs the [Uri] to redirect the user of your application to Genius's authentication page.
   ///
-  /// It allows you to open this Uri by your self, because this part is very platform-dependent.
-  /// Example of usage with [openUrlOnDesktop] is implemented in [authorize] method.
+  /// It allows you to open this Uri by yourself, because this part is very platform-dependent.
   ///
   /// Note that just requesting this Uri by http GET is pointless, as it returns HTML page.
   ///
@@ -125,32 +119,11 @@ class GeniusApiAuth {
       'client_id': clientId,
       'redirect_uri': redirectUri.toString(),
       'scope': scope
-          .fold<String>('', (value, el) => value + el.stringValue + ' ')
+          .fold<String>('', (value, el) => '$value${el.name} ')
           .trimRight(),
       'state': state,
-      'response_type': responseType.stringValue,
+      'response_type': responseType.name,
     });
-  }
-
-  /// Function to implement the usage of URI from the [constructAuthorize] method,
-  /// opens browser on desktop platforms by default.
-  ///
-  /// See [constructAuthorize] and [openUrlOnDesktop] for the full description.
-  Future<ProcessResult> authorize({
-    List<GeniusApiAuthScope> scope = const [GeniusApiAuthScope.me],
-    String? state,
-    GeniusApiAuthResponseType responseType = GeniusApiAuthResponseType.code,
-  }) {
-    try {
-      return openUrlOnDesktop(constructAuthorize(
-        scope: scope,
-        state: state,
-        responseType: responseType,
-      ).toString());
-    } catch (error) {
-      throw Exception(
-          'You are not on a desktop platform. Consider using `constructAuthorize` method instead to get the redirect Uri and open it manually.');
-    }
   }
 
   /// Exchanges code query parameter from the redirect URL after [authorize] to the actual [GeniusApi.accessToken]
@@ -175,7 +148,7 @@ class GeniusApiAuth {
         'grant_type': 'authorization_code',
         'client_id': clientId,
         'redirect_uri': redirectUri.toString(),
-        'response_type': GeniusApiAuthResponseType.code.stringValue,
+        'response_type': GeniusApiAuthResponseType.code.name,
       }),
     );
     final json = jsonDecode(res.body);
@@ -217,7 +190,7 @@ enum GeniusApiAuthScope {
   /// ```
 
   // ignore: constant_identifier_names
-  create_annotation, // for easy serialization in [GeniusApiAuthScopeStringValue] keep it snake case
+  create_annotation, // for easy serialization keep it snake case
 
   /// Endpoints
   /// ```
@@ -226,7 +199,7 @@ enum GeniusApiAuthScope {
   /// ```
 
   // ignore: constant_identifier_names
-  manage_annotation, // for easy serialization in [GeniusApiAuthScopeStringValue] keep it snake case
+  manage_annotation, // for easy serialization keep it snake case
 
   /// Endpoints
   /// ```
@@ -244,20 +217,4 @@ enum GeniusApiAuthResponseType {
 
   /// The user will be  redirected to `https://REDIRECT_URI/#access_token=ACCESS_TOKEN&state=STATE`.
   token
-}
-
-/// Extension to serialize the value of [GeniusApiAuthScope].
-extension GeniusApiAuthScopeStringValue on GeniusApiAuthScope {
-  /// Returns a string with the value of enum
-  String get stringValue {
-    return EnumToString.convertToString(this);
-  }
-}
-
-/// Extension to serialize the value of [GeniusApiAuthResponseType].
-extension GeniusApiAuthResponseTypeStringValue on GeniusApiAuthResponseType {
-  /// Returns a string with the value of enum.
-  String get stringValue {
-    return EnumToString.convertToString(this);
-  }
 }

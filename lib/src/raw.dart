@@ -1,11 +1,4 @@
-/*---------------------------------------------------------------------------------------------
-*  Copyright (c) nt4f04und. All rights reserved.
-*  Licensed under the BSD-style license. See LICENSE in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
-
 import 'package:genius_api_unofficial/genius_api_unofficial.dart';
-
-import 'auth.dart';
 
 /// Basic Genius API implementation which contains all the endpoints
 /// listed in the official documentation.
@@ -18,12 +11,9 @@ class GeniusApiRaw extends GeniusApi {
   /// * More info about accessToken: [GeniusApi.accessToken].
   /// * More info about defaultOptions: [GeniusApi.defaultOptions].
   GeniusApiRaw({
-    String? accessToken,
-    GeniusApiOptions? defaultOptions,
-  }) : super(
-          accessToken: accessToken,
-          defaultOptions: defaultOptions,
-        );
+    super.accessToken,
+    super.defaultOptions,
+  });
 
   /// Gets data for a specific annotation.
   ///
@@ -44,8 +34,7 @@ class GeniusApiRaw extends GeniusApi {
     options = combineOptions(options);
     return get(
       Uri.https(GeniusApi.baseUrl, 'annotations/$id', {
-        if (options.textFormat != null)
-          'text_format': options.textFormat.stringValue,
+        if (options.textFormat != null) 'text_format': options.textFormat!.name,
       }),
       options,
     );
@@ -211,8 +200,7 @@ class GeniusApiRaw extends GeniusApi {
     options = combineOptions(options);
     return put(
       Uri.https(GeniusApi.baseUrl, 'annotations/$id/upvote', {
-        if (options.textFormat != null)
-          'text_format': options.textFormat.stringValue,
+        if (options.textFormat != null) 'text_format': options.textFormat!.name,
       }),
       options,
     );
@@ -232,8 +220,7 @@ class GeniusApiRaw extends GeniusApi {
     options = combineOptions(options);
     return put(
       Uri.https(GeniusApi.baseUrl, 'annotations/$id/downvote', {
-        if (options.textFormat != null)
-          'text_format': options.textFormat.stringValue,
+        if (options.textFormat != null) 'text_format': options.textFormat!.name,
       }),
       options,
     );
@@ -253,8 +240,7 @@ class GeniusApiRaw extends GeniusApi {
     options = combineOptions(options);
     return put(
       Uri.https(GeniusApi.baseUrl, 'annotations/$id/unvote', {
-        if (options.textFormat != null)
-          'text_format': options.textFormat.stringValue,
+        if (options.textFormat != null) 'text_format': options.textFormat!.name,
       }),
       options,
     );
@@ -279,7 +265,7 @@ class GeniusApiRaw extends GeniusApi {
       'At least one required: webPageCanonicalUrl, webPageOgUrl or webPageTitle',
     );
     return {
-      if (textFormat != null) 'text_format': textFormat.stringValue,
+      if (textFormat != null) 'text_format': textFormat.name,
       'annotation': {
         'body': {
           'markdown': annotationMarkdown,
@@ -351,8 +337,7 @@ class GeniusApiRaw extends GeniusApi {
         if (webPageId != null) 'web_page_id': webPageId.toString(),
         if (perPage != null) 'per_page': perPage.toString(),
         if (page != null) 'page': page.toString(),
-        if (options.textFormat != null)
-          'text_format': options.textFormat.stringValue,
+        if (options.textFormat != null) 'text_format': options.textFormat!.name,
       }),
       options,
     );
@@ -375,8 +360,7 @@ class GeniusApiRaw extends GeniusApi {
     options = combineOptions(options);
     return get(
       Uri.https(GeniusApi.baseUrl, 'songs/$id', {
-        if (options.textFormat != null)
-          'text_format': options.textFormat.stringValue,
+        if (options.textFormat != null) 'text_format': options.textFormat!.name,
       }),
       options,
     );
@@ -397,8 +381,7 @@ class GeniusApiRaw extends GeniusApi {
     options = combineOptions(options);
     return get(
       Uri.https(GeniusApi.baseUrl, 'artists/$id', {
-        if (options.textFormat != null)
-          'text_format': options.textFormat.stringValue,
+        if (options.textFormat != null) 'text_format': options.textFormat!.name,
       }),
       options,
     );
@@ -426,11 +409,10 @@ class GeniusApiRaw extends GeniusApi {
     options = combineOptions(options);
     return get(
       Uri.https(GeniusApi.baseUrl, 'artists/$id/songs', {
-        if (sort != null) 'sort': sort.stringValue,
+        if (sort != null) 'sort': sort.name,
         if (perPage != null) 'per_page': perPage.toString(),
         if (page != null) 'page': page.toString(),
-        if (options.textFormat != null)
-          'text_format': options.textFormat.stringValue,
+        if (options.textFormat != null) 'text_format': options.textFormat!.name,
       }),
       options,
     );
@@ -472,8 +454,7 @@ class GeniusApiRaw extends GeniusApi {
           'raw_annotatable_url': rawAnnotatableUrl.toString(),
         if (canonicalUrl != null) 'canonical_url': canonicalUrl.toString(),
         if (ogUrl != null) 'og_url': ogUrl.toString(),
-        if (options.textFormat != null)
-          'text_format': options.textFormat.stringValue,
+        if (options.textFormat != null) 'text_format': options.textFormat!.name,
       }),
       options,
     );
@@ -509,8 +490,7 @@ class GeniusApiRaw extends GeniusApi {
     options = combineOptions(options);
     return get(
       Uri.https(GeniusApi.baseUrl, '/account', {
-        if (options.textFormat != null)
-          'text_format': options.textFormat.stringValue,
+        if (options.textFormat != null) 'text_format': options.textFormat!.name,
       }),
       options,
     );

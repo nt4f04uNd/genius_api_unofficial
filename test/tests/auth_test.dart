@@ -1,85 +1,56 @@
-/*---------------------------------------------------------------------------------------------
-*  Copyright (c) nt4f04und. All rights reserved.
-*  Licensed under the BSD-style license. See LICENSE in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
-
 import 'package:genius_api_unofficial/genius_api_unofficial.dart';
 import 'package:test/test.dart';
-
-import '../config.dart';
 
 // TODO: better tests with mocks
 
 void main() {
-  final config = TestConfig.fromJsonConfig();
-
-  final skipGroup = config.skipGroup;
-  final skipTest = config.skipTest;
-
-  final auth = GeniusApiAuth(
-    clientId: config.clientId,
-    clientSecret: config.clientSecret,
-    redirectUri: config.redirectUri,
-  );
-
-  group(
-    'Auth constructors | ',
-    () {
-      test(
-        'Client',
-        () {
-          GeniusApiAuth.client(
-            clientId: config.clientId,
-            redirectUri: config.redirectUri,
-          );
-        },
-        skip: skipTest,
+  group('Auth constructors | ', () {
+    test('Client', () {
+      const clientId = 'clientId';
+      const redirectUri = 'example.com';
+      final api = GeniusApiAuth.client(
+        clientId: clientId,
+        redirectUri: redirectUri,
       );
+      expect(api.clientId, clientId);
+      expect(api.redirectUri, Uri.parse(redirectUri));
+      expect(api.clientSecret, null);
+    });
 
-      test(
-        'Server',
-        () {
-          GeniusApiAuth.server(
-            clientSecret: config.clientSecret,
-            redirectUri:config.redirectUri,
-          );
-        },
+    test('Client with URI', () {
+      const clientId = 'clientId';
+      final redirectUri = Uri.parse('example.com');
+      final api = GeniusApiAuth.client(
+        clientId: clientId,
+        redirectUri: redirectUri,
       );
-    },
-    skip: skipGroup,
-  );
+      expect(api.clientId, clientId);
+      expect(api.redirectUri, redirectUri);
+      expect(api.clientSecret, null);
+    });
 
-  //****************** Methods group *****************************************************
-  group(
-    'Auth methods | ',
-    () {
-      //******** authorize ********
-      test(
-        'authorize method test',
-        () async {
-          await auth.authorize(
-            // scope: GeniusApiAuthScope.values.toList(),
-            scope: [],
-            // responseType: GeniusApiAuthResponseType.token,
-            responseType: GeniusApiAuthResponseType.code,
-            state: 'TEST_STATE'
-          );
-        },
-        skip: skipTest,
+    test('Server', () {
+      const clientSecret = 'clientSecret';
+      const redirectUri = 'example.com';
+      final api = GeniusApiAuth.server(
+        clientSecret: clientSecret,
+        redirectUri: redirectUri,
       );
+      expect(api.clientId, null);
+      expect(api.redirectUri, Uri.parse(redirectUri));
+      expect(api.clientSecret, clientSecret);
+    });
 
-      //******** token ********
-      test(
-        'token method test',
-        () async {
-          expect(
-            await auth.token(config.exchangeCode!),
-            isA<String>(),
-          );
-        },
-        skip: skipTest,
+    test('Server with URI', () {
+      const clientSecret = 'clientSecret';
+      final redirectUri = Uri.parse('example.com');
+      final api = GeniusApiAuth.server(
+        clientSecret: clientSecret,
+        redirectUri: redirectUri,
       );
-    },
-    skip: skipGroup,
-  );
+      expect(api.clientId, null);
+      expect(api.redirectUri, redirectUri);
+      expect(api.clientSecret, clientSecret);
+    });
+  });
 }

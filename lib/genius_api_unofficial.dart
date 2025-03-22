@@ -1,8 +1,3 @@
-/*---------------------------------------------------------------------------------------------
-*  Copyright (c) nt4f04und. All rights reserved.
-*  Licensed under the BSD-style license. See LICENSE in the project root for license information.
-*--------------------------------------------------------------------------------------------*/
-
 // TODO: update this doc comment on each release.
 
 /// This library provides you with a nice interface to Genius API.
@@ -65,9 +60,8 @@
 ///
 /// * [GitHub repository](https://github.com/nt4f04uNd/genius_api_unofficial)
 ///
-library genius_api_unofficial;
+library;
 
 export 'src/auth.dart';
 export 'src/core.dart';
 export 'src/raw.dart';
-export 'src/utils.dart';
