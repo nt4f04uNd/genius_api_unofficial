@@ -1,0 +1,165 @@
+name: Integration Tests
+
+on:
+  pull_request:
+  push:
+    branches:    
+      - main
+      - master
+      - 'releases/**'
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 🔄 Check out repository
+      uses: actions/checkout@v4
+
+    - name: 💾 Cache Dart dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.pub-cache
+        key: ${{ runner.os }}-dart-${{ hashFiles('**/pubspec.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-dart-
+
+    - name: 🐦 Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: 3.29.2
+        channel: "stable"
+        cache: true
+
+    - name: 📦 Install Dependencies
+      run: |
+        flutter pub get      
+
+    - name: 🔐 Set up environment variables
+      shell: bash
+      run: |
+        mkdir -p test/.env
+        echo '{
+          "email": "${{ secrets.GENIUS_EMAIL }}",
+          "password": "${{ secrets.GENIUS_PASSWORD }}",
+          "clientId": "${{ secrets.GENIUS_CLIENT_ID }}",
+          "clientSecret": "${{ secrets.GENIUS_CLIENT_SECRET }}",
+          "redirectUri": "${{ secrets.GENIUS_REDIRECT_URI }}"
+        }' > test/.env/secrets.json
+
+    - name: 🔐 Setup VPN
+      run: |
+        echo "Before VPN connection:"
+        BEFORE_IP=$(curl -s ifconfig.me)
+        echo "Public IP address: $BEFORE_IP"
+
+        # Decode and set up VPN config
+        echo "${{ secrets.OVPN_FILE }}" | base64 --decode > vpn_config.ovpn
+        sudo apt-get update
+        sudo apt-get install -y openvpn
+
+        # Write VPN credentials to file
+        echo "${{ secrets.PROTON_VPN_USERNAME }}" > vpn_auth.txt
+        echo "${{ secrets.PROTON_VPN_PASSWORD }}" >> vpn_auth.txt
+
+        # Start the VPN connection in the background (daemon mode)
+        sudo openvpn --config vpn_config.ovpn --auth-user-pass vpn_auth.txt --daemon --verb 4
+        
+        # Wait for VPN to establish
+        sleep 10
+
+        # Print the public IP address after VPN connection
+        echo "After VPN connection:"
+        AFTER_IP=$(curl -s ifconfig.me)
+        echo "Public IP address: $AFTER_IP"
+
+        # Check if the VPN connection was successful
+        if [ "$BEFORE_IP" = "$AFTER_IP" ]; then
+            echo "❌ VPN connection failed: IP address did not change!"
+            exit 1
+        else
+            echo "✅ VPN connected successfully!"
+        fi
+
+    - name: 🌍 Install Google Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable        
+
+    - name: 🔍 Get Chrome version
+      id: chrome_version
+      run: |
+        CHROME_VERSION=$(google-chrome-stable --version | awk '{print $3}')
+        echo "Chrome version: $CHROME_VERSION"
+        echo "CHROME_VERSION=$CHROME_VERSION" >> $GITHUB_ENV
+
+    - name: 💾 Cache ChromeDriver
+      uses: actions/cache@v3
+      with:
+        path: /usr/local/bin/chromedriver
+        key: ${{ runner.os }}-chromedriver-${{ env.CHROME_VERSION }}
+        restore-keys: |
+          ${{ runner.os }}-chromedriver-
+
+    - name: ⚙️ Install chromedriver matching Chrome version
+      run: |
+        echo "Checking if chromedriver is installed..."
+        
+        if command -v chromedriver &> /dev/null; then
+          echo "Chromedriver is already installed."
+        else
+          echo "Installing chromedriver for Chrome version: $CHROME_VERSION"
+          
+          # Get the correct chromedriver version for the current Chrome version
+          CHROMEDRIVER_VERSION=$(curl -sS https://storage.googleapis.com/chrome-for-testing-public/LATEST_RELEASE_${{ env.CHROME_VERSION }})
+          if [ -z "$CHROMEDRIVER_VERSION" ]; then
+            echo "Error: Could not find chromedriver version for Chrome $CHROME_VERSION."
+            exit 1
+          fi
+          echo "Found chromedriver version: $CHROMEDRIVER_VERSION"
+          
+          CHROMEDRIVER_URL="https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}/linux64/chromedriver-linux64.zip"
+
+          # Retry download if it fails
+          for i in {1..3}; do
+            wget "$CHROMEDRIVER_URL" -O chromedriver_linux64.zip && break || sleep 5
+          done
+          
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to download chromedriver after multiple attempts."
+            exit 1
+          fi
+          
+          unzip chromedriver_linux64.zip
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to unzip chromedriver."
+            exit 1
+          fi
+          
+          sudo mv chromedriver /usr/local/bin/
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to move chromedriver to /usr/local/bin/."
+            exit 1
+          fi
+          
+          rm chromedriver_linux64.zip
+          echo "✅ Chromedriver installation successful."
+        fi      
+
+    - name: 🚀 Run chromedriver
+      run: |
+        chromedriver --port=9515 &
+        sleep 5  # Wait a bit for chromedriver to start
+  
+    - name: 🧪 Run integration tests
+      run: |
+        dart test/integration/run_tests.dart --coverage
+
+    - name: ☂ Upload Code Coverage
+      uses: codecov/codecov-action@v5
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: 🔌 Disconnect VPN
+      if: always()
+      run: sudo pkill openvpn
